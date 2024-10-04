@@ -2,9 +2,6 @@ using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using Photon.Realtime;
-using UnityEditor;
-using UnityEngine.Assertions.Must;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
@@ -21,11 +18,13 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public TMP_Text   errorText;
     
     [Header("로그인")]
-    public GameObject     loginScreen;
-    public TMP_InputField nicknameInput;
-    public TMP_InputField passwordInput;
-    public Toggle         authorityToggle; // 권한 토글
-    public static bool    hasSetNick;      // ☆ 정적 bool (게임을 끝내고 돌아와서도, true상태로 남아있음)
+    public GameObject      loginScreen;
+    public TMP_InputField  nicknameOrEmailInput;
+    public TextMeshProUGUI placeholderText;      // 안내 텍스트
+    public TMP_InputField  passwordInput;
+    public Toggle          authorityToggle;      // 권한 토글
+    public GameObject      createAccountButton;
+    public static bool     hasFistOnLobby;       // ☆ 정적 bool (게임을 끝내고 돌아와서도, true상태로 남아있음) // 맨처음 로비에 입장인지 체크
     
     [Header("미러링")]
     public GameObject mirroringScreen;
@@ -100,15 +99,10 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public override void OnJoinedLobby()
     {
         // 게임 자체를 처음 접속
-        if (!hasSetNick)
+        if (!hasFistOnLobby)
         {
             CloseMenus();
             loginScreen.SetActive(true);
-
-            if (PlayerPrefs.HasKey("playerName"))
-            {
-                nicknameInput.text = PlayerPrefs.GetString("playerName");
-            }
         }
         
         // CMS 접속 플레이어 구분 헤쉬테이블 추가

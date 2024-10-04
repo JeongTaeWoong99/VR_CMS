@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "687470448967",
+    "project_id": "cms-login-d93aa",
+    "storage_bucket": "cms-login-d93aa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:687470448967:android:a1eab8140bdf582195fc62",
+        "android_client_info": {
+          "package_name": "com.firebase.cmslogin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD1uYRaQ_jDCcaSQL3hZbVr9hXSaRcNnSk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

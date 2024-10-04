@@ -24,14 +24,21 @@ public class MenuButton : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // 미러링 버튼 활성화
+        // 미러링 버튼 활성화(0번 버튼)
         // 비디오 버튼 비활성화 && 룸 X && 로비 O
-        if (!menuButtonList[1].interactable && !PhotonNetwork.InRoom && PhotonNetwork.InLobby)
+        if (!menuButtonList[1].interactable && !PhotonNetwork.InRoom && PhotonNetwork.InLobby && !menuButtonList[0].interactable)
+        {
+            Debug.Log(menuButtonList[0].name + " 활성화 ");
             menuButtonList[0].interactable = true;
-        // 비디오 버튼 활성화
+        }
+        
+        // 비디오 버튼 활성화(1번 버튼)
         // 미러링 버튼 비활성화 && 룸 O 
-        else if(!menuButtonList[0].interactable && PhotonNetwork.InRoom)
+        if (!menuButtonList[0].interactable && PhotonNetwork.InRoom && !menuButtonList[1].interactable)
+        {
+            Debug.Log(menuButtonList[1].name + " 활성화 ");
             menuButtonList[1].interactable = true;
+        }
     }
 
     // 미러링 초기화
@@ -82,6 +89,7 @@ public class MenuButton : MonoBehaviour
 
     public void QuitGame()
     {
+        Debug.LogError("종료");
         Application.Quit();
     }
 }
