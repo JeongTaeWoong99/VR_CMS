@@ -2,7 +2,6 @@ using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using Photon.Realtime;
-using UnityEngine.UI;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class PunSystem : MonoBehaviourPunCallbacks
@@ -20,10 +19,11 @@ public class PunSystem : MonoBehaviourPunCallbacks
     [Header("로그인")]
     public GameObject      loginScreen;
     public TMP_InputField  nicknameOrEmailInput;
-    public TextMeshProUGUI placeholderText;      // 안내 텍스트
+    // public TextMeshProUGUI placeholderText;      // 텍스트 안 회색 안내 텍스트
     public TMP_InputField  passwordInput;
-    public Toggle          authorityToggle;      // 권한 토글
-    public GameObject      createAccountButton;
+    // public Toggle          authorityToggle;      // 권한 토글
+    public TextMeshProUGUI feedbackText;         // 버튼 클릭 시, 파이어베이스 피드백 텍스트
+    // public GameObject      createAccountButton;
     public static bool     hasFistOnLobby;       // ☆ 정적 bool (게임을 끝내고 돌아와서도, true상태로 남아있음) // 맨처음 로비에 입장인지 체크
     
     [Header("미러링")]

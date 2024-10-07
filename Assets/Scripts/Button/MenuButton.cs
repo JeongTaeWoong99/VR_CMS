@@ -28,7 +28,6 @@ public class MenuButton : MonoBehaviour
         // 비디오 버튼 비활성화 && 룸 X && 로비 O
         if (!menuButtonList[1].interactable && !PhotonNetwork.InRoom && PhotonNetwork.InLobby && !menuButtonList[0].interactable)
         {
-            Debug.Log(menuButtonList[0].name + " 활성화 ");
             menuButtonList[0].interactable = true;
         }
         
@@ -36,7 +35,6 @@ public class MenuButton : MonoBehaviour
         // 미러링 버튼 비활성화 && 룸 O 
         if (!menuButtonList[0].interactable && PhotonNetwork.InRoom && !menuButtonList[1].interactable)
         {
-            Debug.Log(menuButtonList[1].name + " 활성화 ");
             menuButtonList[1].interactable = true;
         }
     }
