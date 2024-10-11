@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -40,13 +41,14 @@ public class UnityMainThreadDispatcher : MonoBehaviour
         }
     }
     
-    // public void CoroutineEnqueue(IEnumerator action)
-    // {
-    //     lock (executionQueue)
-    //     {
-    //         executionQueue.Enqueue(() => StartCoroutine(action));
-    //     }
-    // }
+    public void CoroutineEnqueue(IEnumerator action)
+    {
+        // lock를 활용하여, 완료되기 전에, 접근하지 못하도록 함.
+        lock (executionQueue)
+        {
+            executionQueue.Enqueue(() => StartCoroutine(action));
+        }
+    }
     
     // public void Enqueue(Action action)
     // {

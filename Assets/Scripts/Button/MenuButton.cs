@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Photon.Pun;
 using Photon.Realtime;
@@ -22,27 +23,14 @@ public class MenuButton : MonoBehaviour
             menuButtonLists.gameObject.SetActive(false);
     }
 
-    private void FixedUpdate()
-    {
-        // 미러링 버튼 활성화(0번 버튼)
-        // 비디오 버튼 비활성화 && 룸 X && 로비 O
-        if (!menuButtonList[1].interactable && !PhotonNetwork.InRoom && PhotonNetwork.InLobby && !menuButtonList[0].interactable)
-        {
-            menuButtonList[0].interactable = true;
-        }
-        
-        // 비디오 버튼 활성화(1번 버튼)
-        // 미러링 버튼 비활성화 && 룸 O 
-        if (!menuButtonList[0].interactable && PhotonNetwork.InRoom && !menuButtonList[1].interactable)
-        {
-            menuButtonList[1].interactable = true;
-        }
-    }
-
     // 미러링 초기화
     // 미러링 화면에서, 다른 화면으로 넘어가는 버튼을 눌렀을 때, 초기화 실시
-    private void ResetMirroring()
+    private IEnumerator ResetMirroring(int notInteractableNum)
     {
+        // 버튼 상태 제어(비활성화)
+        foreach (var menuButtonLists in menuButtonList)
+            menuButtonLists.interactable = false;
+    
         // 방에 들어가 있으면 (= 모니터링 버튼 화면에서 비디오 쉐어 버튼 누르면)
         if (PhotonNetwork.InRoom)
         {
@@ -54,11 +42,20 @@ public class MenuButton : MonoBehaviour
             }
             PhotonNetwork.LeaveRoom();  // 방 떠나기
         }
+        
+        yield return new WaitUntil(() => PhotonNetwork.InLobby);    // 로비 입장까지 기다리기...
+        
+        // 버튼 상태 제어(활성화)
+        foreach (var menuButtonLists in menuButtonList)
+            menuButtonLists.interactable = true;
+        menuButtonList[notInteractableNum].interactable = false;    // 누른 자신 제외
     }
     
     public void OnMirroring()
     {
-        menuButtonList[0].interactable = false;
+        // 버튼 상태 제어(비활성화)
+        foreach (var menuButtonLists in menuButtonList)
+            menuButtonLists.interactable = false;
         PunSystem.instance.CloseMenus();
         PunSystem.instance.mirroringScreen.SetActive(true);
         
@@ -73,10 +70,19 @@ public class MenuButton : MonoBehaviour
     
     public void OnVideoShare()
     {
-        menuButtonList[1].interactable = false;
-        ResetMirroring();
         PunSystem.instance.CloseMenus();
         PunSystem.instance.videoShareScreen.SetActive(true);
+        StartCoroutine(ResetMirroring(1));
+    }
+
+    public void OnAuthority()
+    {
+        PunSystem.instance.CloseMenus();
+        PunSystem.instance.authorityScreen.SetActive(true);
+        StartCoroutine(ResetMirroring(2));
+
+        FirebaseManager.inctance.RemoveAllUsersPrefabs();    // 기존 정보 모두 삭제하기
+        FirebaseManager.inctance.ReadAllUsersFromDatabase(); // 정보 뽑아오기
     }
     
     // 에러 스크린 버튼 닫기

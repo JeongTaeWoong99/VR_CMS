@@ -75,7 +75,6 @@ public class FM_System : MonoBehaviourPunCallbacks
                 //                  └── GameViewDecoder
                 GameObject mirroringScreenObject = decoder.transform.parent.gameObject;
                 Destroy(mirroringScreenObject);
-                Destroy(mirroringScreenObject);
                 break;
             }
         }

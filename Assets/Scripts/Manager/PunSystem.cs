@@ -32,6 +32,9 @@ public class PunSystem : MonoBehaviourPunCallbacks
     [Header("비디오공유")]
     public GameObject videoShareScreen;
     
+    [Header("권한승인")]
+    public GameObject authorityScreen;
+    
     // public GameObject     createRoomScreen;
     // public TMP_InputField roomNameInput;
 
@@ -121,6 +124,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
         loginScreen.SetActive(false);
         mirroringScreen.SetActive(false);
         videoShareScreen.SetActive(false);
+        authorityScreen.SetActive(false);
     }
 
     // 버튼 함수
@@ -216,23 +220,16 @@ public class PunSystem : MonoBehaviourPunCallbacks
     //     errorScreen.SetActive(true);
     // }
 
-    // 만든 방 삭제 및  삭제가 완료되면, Lobby로 다시 접속(Room -> Lobby)
-    // public void LeaveRoom()
-    // {
-    //     PhotonNetwork.LeaveRoom();
-    //     CloseMenus();
-    //     loadingText.text = "Leaving Room";
-    //     loadingScreen.SetActive(true);
-    // }
-    
-    // 접속한 방을 떠나기가 완료되면, 호출됨.
-    // 모니터링 화면에서, 비디오 쉐어 버튼을 눌렀을 때,(비디오 쉐어 버튼만 꺼져있어야 함.)
-    public override void OnLeftRoom()
+    // 만든 방 삭제 및 삭제가 완료되면, Lobby로 다시 접속(Room -> Lobby)
+    public void LeaveRoom()
     {
-        // // 비디오 쉐어 버튼 빼고, 상호작용 켜기.
-        // for (int i = 0; i < MenuButton.instance.menuButtonList.Count - 1 ; i++)
-        //     MenuButton.instance.menuButtonList[i].GetComponent<Button>().interactable = true;
+        PhotonNetwork.LeaveRoom();
+        CloseMenus();
+        loadingText.text = "Leaving Room";
+        loadingScreen.SetActive(true);
     }
+    
+    
 
     // 버튼 함수
     // public void OpenRoomBrowser()
@@ -292,8 +289,13 @@ public class PunSystem : MonoBehaviourPunCallbacks
     // 디코더 등록
     public override void OnJoinedRoom()
     {
-        Player[] inRoomPlayerList = PhotonNetwork.PlayerList;
+        // 버튼 상태 제어
+        foreach (var menuButtonLists in MenuButton.instance.menuButtonList)
+            menuButtonLists.interactable = true;
+        MenuButton.instance.menuButtonList[0].interactable = false;
 
+        // 모니터링 할 플레이어 만들기
+        Player[] inRoomPlayerList = PhotonNetwork.PlayerList;
         foreach (var inRoomPlayerLists in inRoomPlayerList)
         {
             // CMS 플레이어는 제외 하도록 한다.
@@ -301,6 +303,17 @@ public class PunSystem : MonoBehaviourPunCallbacks
                 FM_System.instance.DecoderRegistration(inRoomPlayerLists);
         }
     }
+    
+    // 접속한 방을 다른 클라이언트가 떠나면, 호출됨.
+    // 모니터링 화면에서, 비디오 쉐어 버튼을 눌렀을 때,(비디오 쉐어 버튼만 꺼져있어야 함.)
+    // public override void OnLeftRoom()
+    // {
+    //     // // 비디오 쉐어 버튼 빼고, 상호작용 켜기.
+    //     // for (int i = 0; i < MenuButton.instance.menuButtonList.Count - 1 ; i++)
+    //     //     MenuButton.instance.menuButtonList[i].GetComponent<Button>().interactable = true;
+    // }
+    
+    
     
     // 방 입장 실패 시 호출
     // 미러링 할 유저가 없으면(=방이 말들어져 있지 않음), 방 만들어서 들어가기.

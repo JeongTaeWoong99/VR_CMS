@@ -1,22 +1,51 @@
+using System;
+using System.Collections;
 using Firebase;
 using Firebase.Auth;
+using Firebase.Database;
 using Photon.Pun;
+using TMPro;
 using UnityEngine;
+
+[Serializable]  // 직열화(Json형식)
+public class DataToSave
+{
+    public string Email;
+    public int    authority = 1;   // 기본 권한 = 1단계 (2단계 인증 회원 / 3단계 관리자)
+    public string creationDate;    // 요청했을 때 날짜
+}
 
 public class FirebaseManager : MonoBehaviour
 {
+    public static FirebaseManager inctance;
+
+    private string result = "접속을 환영합니다.";
+    
+    [Header("인증")]
     private FirebaseAuth auth; // 로그인, 회원가입 등에 사용
     private FirebaseUser user; // 로그인 성공한 유저 정보
 
-    private string result = "접속을 환영합니다.";
+    [Header("데이터베이스")] 
+    private DatabaseReference dbRef;              // 데이터베이스 참조
+    public  GameObject        userRequestPrefabs;
+    public  GameObject        requestGroup;       // 만들어진 유저리퀘스트 위치 그룹
+
+    private void Awake()
+    {
+        inctance = this;
+    
+        dbRef = FirebaseDatabase.DefaultInstance.RootReference;
+    }
 
     private void Start()
     {
-        auth = FirebaseAuth.DefaultInstance;
-        user = null;
-        
+#if UNITY_EDITOR
         PunSystem.instance.nicknameOrEmailInput.text = "admin@123.com";
         PunSystem.instance.passwordInput.text        = "admin123";
+#endif
+
+        auth = FirebaseAuth.DefaultInstance;
+        user = null;
     }
 
     private void CreateAccount()
@@ -27,7 +56,7 @@ public class FirebaseManager : MonoBehaviour
                 if (task.IsCanceled) 
                 {
                     result = "회원가입이 취소되었습니다.";
-                    UnityMainThreadDispatcher.instance.MethodEnqueue(UpdateFeedbackText);
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
                     return;
                 }
                 
@@ -61,32 +90,48 @@ public class FirebaseManager : MonoBehaviour
                         }
                     }
                     result = errorMessage;
-                    UnityMainThreadDispatcher.instance.MethodEnqueue(UpdateFeedbackText);
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
                     return;
                 }
 
                 if (task.IsCompletedSuccessfully)
                 {
+                    // 인증 : 이메일 및 비밀번호 저장
                     result = "회원가입이 완료되었습니다!";
-                    UnityMainThreadDispatcher.instance.MethodEnqueue(UpdateFeedbackText);
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
+                    
+                    // 데이터베이스 : 필요 내용 저장(이메일 / 권한  등등등)
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(QueueDataBaseSave);
+                    
                     return;
                 }
             });
     }
     
     // 일반 큐 메서드
-    private void UpdateFeedbackText() // 큐(메인 스레드)에서 작동.
+    private void QueueFeedbackText() // 큐(메인 스레드)에서 작동.
     {
         PunSystem.instance.feedbackText.text = result;
     }
-
-    // 코루틴 큐 메서드
-    // private IEnumerator UpdateFeedbackText()    // 큐(메인 스레드)에서 작동.
-    // {
-    //     PunSystem.instance.feedbackText.text = result;
-    //     yield return null;
-    // }
     
+    // 일반 큐 메서드 (데이터 베이스 저장)
+    private void QueueDataBaseSave()
+    {
+        DataToSave newDTS  = new DataToSave();           // 객체 생성
+        
+        DateTime today = DateTime.Now;                   // 생성 날짜 저장
+        newDTS.creationDate = today.ToString("yyyy-MM-dd");
+        
+        string[] ID_Split = PunSystem.instance.nicknameOrEmailInput.text.Split("@"); // @앞부분 아이디만 가져오기.
+        string   userID   = ID_Split[0];                                                     // '@' 앞 부분을 가져옴
+        newDTS.Email      = ID_Split[1];                                                     // '@' 뒷 부분을 가져옴(Email 데이터 저장)
+        
+        string json = JsonUtility.ToJson(newDTS); // 직열화
+        dbRef.Child("Users").Child(userID).SetRawJsonValueAsync(json); // 데이터베이스의 users
+                                                                       //               └── ID
+                                                                       //                     └──  Json 형식 내용물
+    }
+
     public void Login()
     {
         if (!string.IsNullOrEmpty(PunSystem.instance.nicknameOrEmailInput.text))
@@ -97,7 +142,7 @@ public class FirebaseManager : MonoBehaviour
                     if (task.IsCanceled) 
                     {
                         result = "로그인이 취소되었습니다.";
-                        UnityMainThreadDispatcher.instance.MethodEnqueue(UpdateFeedbackText);
+                        UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
                         return;
                     }
             
@@ -129,14 +174,14 @@ public class FirebaseManager : MonoBehaviour
                             }
                         }
                         result = errorMessage;
-                        UnityMainThreadDispatcher.instance.MethodEnqueue(UpdateFeedbackText);
+                        UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
                         return;
                     }
                     
                     if (task.IsCompletedSuccessfully)
                     {
-                        user = task.Result.User;
-                        UnityMainThreadDispatcher.instance.MethodEnqueue(ScreenTransition); // 화면 전환
+                        user = task.Result.User;    // 이메일 참조 등등에 사용
+                        UnityMainThreadDispatcher.instance.CoroutineEnqueue(QueueAuthorityCheck());
                     }
                 });
         
@@ -179,20 +224,61 @@ public class FirebaseManager : MonoBehaviour
             // }
         }
     }
-
-    // 일반 큐 메서드
-    private void ScreenTransition()
+    
+    // 코루틴 큐 메서드
+    private IEnumerator QueueAuthorityCheck()
     {
-        PunSystem.instance.CloseMenus();                                            
+        string[] ID_Split = PunSystem.instance.nicknameOrEmailInput.text.Split("@");  // @앞부분 아이디만 가져오기.
+        string   userID   = ID_Split[0];                                                     // '@' 앞 부분을 가져옴
+
+        var serverData = dbRef.Child("Users").Child(userID).GetValueAsync(); // 데이터 가져오기
+        yield return new WaitUntil(predicate: () => serverData.IsCompleted);                 // GetValueAsync작업이 완료 될 때 까지 기다리기...
+
+        DataSnapshot snapshot = serverData.Result;
+        string       jsonData = snapshot.GetRawJsonValue();
+        
+        DataToSave bringDTS = new DataToSave();        // 객체 생성(서버에서 가져온 정보)
+        
+        if (jsonData != null)
+        {
+            bringDTS = JsonUtility.FromJson<DataToSave>(jsonData);
+            if (bringDTS.authority == 1)        // 1단계 권한 : 접속 허용 X
+            {
+                PunSystem.instance.feedbackText.text = "관리자 승인이 필요합니다.";
+            }
+            if (bringDTS.authority == 2)        // 2단계 권한 : 접속 허용 O
+            {
+                ScreenTransition(bringDTS.authority);
+            }
+            else if (bringDTS.authority == 3)   // 3단계 권한 : 관리자
+            {
+                ScreenTransition(bringDTS.authority);
+            }
+        }
+    }
+    
+    private void ScreenTransition(int buttonSee)
+    {
+        PunSystem.instance.CloseMenus();
+        PhotonNetwork.NickName = PunSystem.instance.nicknameOrEmailInput.text; // 닉네임 변경
         
         foreach (var menuButtonLists in MenuButton.instance.menuButtonList)                 // 버튼 모두 보이기
             menuButtonLists.gameObject.SetActive(true);
+        switch (buttonSee)  // 권한에 따라, 권한승인 버튼 보이기 or 보이지 않기
+        {
+            case 2: // 2단계 권한 : 보이기 X
+                MenuButton.instance.menuButtonList[2].gameObject.SetActive(false);
+                BackGroundUI.instance.informationText.text = "VR CMS | " + "사용자 | " + user.Email;
+                break;
+            case 3: // 3단계 권한 : 보이기 O
+                MenuButton.instance.menuButtonList[2].gameObject.SetActive(true);
+                BackGroundUI.instance.informationText.text = "VR CMS | " + "관리자 | " + user.Email;
+                break;
+        }
         
-        PhotonNetwork.NickName   = PunSystem.instance.nicknameOrEmailInput.text;            // 텍스트 변경
-        BackGroundUI.instance.informationText.text = "VR CMS | " + "관리자 | " + user.Email;
         PunSystem.hasFistOnLobby = true;                                                    
     }
-    
+
     // private void SettingLogin() // 관리자 + 교육생 공통 부분
     // {
     //     PunSystem.instance.CloseMenus();
@@ -219,9 +305,103 @@ public class FirebaseManager : MonoBehaviour
     //     PunSystem.instance.passwordInput.text        = "";  // 비우기
     // }
     
+    
+    
+    // 권한 승인 : 데이터 가져오기 + 큐에 유저정보프리승인 프리팹 생성 작업 넣기
+    public void ReadAllUsersFromDatabase()
+    {
+        dbRef.Child("Users").GetValueAsync().ContinueWith(task => {
+            if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+
+                if (snapshot.Exists)
+                {
+                    foreach (DataSnapshot userSnapshot in snapshot.Children)
+                    {
+                        string userID      = userSnapshot.Key;
+                        
+                        string jsonContent = userSnapshot.GetRawJsonValue();
+                        DataToSave data    = JsonUtility.FromJson<DataToSave>(jsonContent);
+                        
+                        // 권한이 1인, 유저의 데이터들만 승인창에 뜨도록 하기.
+                        if(data.authority == 1)
+                            UnityMainThreadDispatcher.instance.MethodEnqueue(() => QueueRequestUserPanel(userID, jsonContent)); // 형식이 맞지 않는 문제로, 람다식으로 넣기.
+                    }
+                }
+                else
+                    Debug.LogWarning("데이터베이스에 유저 정보가 없습니다..");
+            }
+            else
+                Debug.LogError("데이터베이스에서 데이터를 검색하지 못했습니다. : " + task.Exception);
+        });
+    }
+    
+    private void QueueRequestUserPanel(string userID, string jsonContent)
+    {
+        GameObject      clonePrefabs = Instantiate(userRequestPrefabs, requestGroup.transform, false); // 유저 요청 프리팹
+        TextMeshProUGUI emailText    = clonePrefabs.transform.GetChild(0).GetComponent<TextMeshProUGUI>();          // 이메일 텍스트 
+        TextMeshProUGUI creationDate = clonePrefabs.transform.GetChild(1).GetComponent<TextMeshProUGUI>();          // 생성날짜 텍스트
+        
+        DataToSave data   = JsonUtility.FromJson<DataToSave>(jsonContent);
+        
+        emailText.text = userID + "@" + data.Email; // 이메일 넣어주기
+        
+        creationDate.text = data.creationDate;      // 생성 날짜 넣어주기
+    }
+
+    public void RemoveAllUsersPrefabs() // 하위 오브젝트 모두 비우기
+    {
+        foreach (Transform child in requestGroup.transform)
+            Destroy(child.gameObject);
+    }
+    
+    public void RequestApproval(string email)   // '승인' 버튼 클릭 시, 확인해서, 승인.
+    {
+        string[] ID_Split  = email.Split("@"); // @앞부분 아이디만 가져오기.
+        string   userID    = ID_Split[0];              // '@' 앞 부분을 가져옴(ID)
+        string   userEmail = ID_Split[1];              // '@' 뒷 부분을 가져옴(Email)
+        
+        dbRef.Child("Users").GetValueAsync().ContinueWith(task => {
+            if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+
+                if (snapshot.Exists)
+                {
+                    foreach (DataSnapshot userSnapshot in snapshot.Children)
+                    {
+                        string jsonContent = userSnapshot.GetRawJsonValue();
+                        DataToSave data    = JsonUtility.FromJson<DataToSave>(jsonContent);
+                        
+                        if (userID == userSnapshot.Key && data.Email == userEmail)
+                        {
+                            Debug.Log("권한 2단계 승급");
+                            data.authority = 2;
+                            string updatedJsonContent = JsonUtility.ToJson(data);
+                            
+                            // 바뀐 정보 업데이트
+                            dbRef.Child("Users").Child(userID).SetRawJsonValueAsync(updatedJsonContent)
+                                .ContinueWith(saveTask => {
+                                    if (saveTask.IsCompleted)
+                                        Debug.Log("권한이 성공적으로 업데이트되었습니다.");
+                                    else
+                                        Debug.LogError("권한 업데이트 중 오류 발생: " + saveTask.Exception);
+                                });
+                        }
+                    }
+                }
+                else
+                    Debug.LogWarning("데이터베이스에 유저 정보가 없습니다..");
+            }
+            else
+                Debug.LogError("데이터베이스에서 데이터를 검색하지 못했습니다. : " + task.Exception);
+        });
+    }
+
     public void LogOut()
     {
         Debug.LogError("로그아웃");
-        auth.SignOut(); 
+        auth.SignOut();
     }
 }
