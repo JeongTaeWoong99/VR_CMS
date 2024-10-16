@@ -72,6 +72,8 @@ public class VideoManager : MonoBehaviour
 
     private void VideoSetting(string[] filePaths)
     {
+        PunSystem.instance.feedbackText.gameObject.SetActive(false);
+    
         if (filePaths.Length > 0)
         {
             string filePath = filePaths[0];  // Get the first selected file path
@@ -92,6 +94,8 @@ public class VideoManager : MonoBehaviour
     
     private void OnFilesSelected(string[] filePaths)
     {
+        PunSystem.instance.loadingScreen.SetActive(true);
+        
         for (int i = 0; i < filePaths.Length; i++)
             Debug.Log(filePaths[i]);
 
@@ -113,20 +117,27 @@ public class VideoManager : MonoBehaviour
             {
                 if (metadataTask.Exception != null)
                 {
-                    Debug.Log("파일이 존재하지 않습니다. 파일을 업로드 합니다.");
+                    AccountManager.inctance.result = "파일이 존재하지 않습니다. 파일을 업로드 합니다.";
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.inctance.QueueFeedbackText);
 
                     uploadRef.PutBytesAsync(bytes, newMetadata).ContinueWithOnMainThread((task) =>
                     {
                         if (task.IsFaulted || task.IsCanceled)
                             Debug.Log(task.Exception.ToString());
                         else
-                            Debug.Log("업로드 성공.");
+                        {
+                            AccountManager.inctance.result = fileName + " 업로드 성공.";
+                            UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.inctance.QueueFeedbackText);
+                            UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
+                        }
                     });
                 }
             }
             else
             {
-                Debug.Log(fileName + " 파일이 이미 존재합니다.");
+                AccountManager.inctance.result = fileName + " 파일이 이미 존재합니다.";
+                UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.inctance.QueueFeedbackText);
+                UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
             }
         });
     }

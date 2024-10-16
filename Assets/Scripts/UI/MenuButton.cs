@@ -36,10 +36,9 @@ public class MenuButton : MonoBehaviour
         {
             // 미러링 등록된, 플레이어 모두 제거
             Player[] inRoomPlayerList = PhotonNetwork.PlayerList;
-            foreach (var inRoomPlayerLists in inRoomPlayerList)      
-            {
+            foreach (var inRoomPlayerLists in inRoomPlayerList)
                 FM_System.instance.DecoderDelete(inRoomPlayerLists);
-            }
+            
             PhotonNetwork.LeaveRoom();  // 방 떠나기
         }
         
@@ -49,15 +48,32 @@ public class MenuButton : MonoBehaviour
         foreach (var menuButtonLists in menuButtonList)
             menuButtonLists.interactable = true;
         menuButtonList[notInteractableNum].interactable = false;    // 누른 자신 제외
+
+        if (notInteractableNum == 1) // 전환이 완료되고, 화면 공유의 경우, 제어버튼 활성화
+        {
+            PunSystem.instance.shareSetting.gameObject.SetActive(true);
+            
+            PunSystem.instance.feedbackText.gameObject.SetActive(true);
+            PunSystem.instance.feedbackText.text = "공유할 영상을 선택해 주세요.";
+        }
+        
+        PunSystem.instance.loadingScreen.SetActive(false);
     }
     
     public void OnMirroring()
     {
+        PunSystem.instance.loadingScreen.SetActive(true);
+        PunSystem.instance.feedbackText.gameObject.SetActive(true);
+        PunSystem.instance.feedbackText.text = "정보 불러오는 중...";
+    
+        PunSystem.instance.CloseMenus();
+        PunSystem.instance.mirroringScreen.SetActive(true);
+        
         // 버튼 상태 제어(비활성화)
         foreach (var menuButtonLists in menuButtonList)
             menuButtonLists.interactable = false;
-        PunSystem.instance.CloseMenus();
-        PunSystem.instance.mirroringScreen.SetActive(true);
+        PunSystem.instance.shareSetting.gameObject.SetActive(false);    // 쉐어세팅버튼 비활성화
+        
         
         // 방 입장 중 아닐 때, 실행
         if (!PhotonNetwork.InRoom)
@@ -70,26 +86,38 @@ public class MenuButton : MonoBehaviour
     
     public void OnVideoShare()
     {
+        PunSystem.instance.loadingScreen.SetActive(true);
+        PunSystem.instance.feedbackText.gameObject.SetActive(true);
+        PunSystem.instance.feedbackText.text = "정보 불러오는 중...";
+    
         PunSystem.instance.CloseMenus();
         PunSystem.instance.videoShareScreen.SetActive(true);
+        
+        PunSystem.instance.shareSetting.gameObject.SetActive(false);    // 쉐어세팅버튼 비활성화
+        
         StartCoroutine(ResetMirroring(1));
     }
 
     public void OnAuthority()
     {
+        PunSystem.instance.loadingScreen.SetActive(true);
+        
         PunSystem.instance.CloseMenus();
         PunSystem.instance.authorityScreen.SetActive(true);
-        StartCoroutine(ResetMirroring(2));
+        
+        PunSystem.instance.shareSetting.gameObject.SetActive(false);    // 쉐어세팅버튼 비활성화
 
         AccountManager.inctance.RemoveAllUsersPrefabs();    // 기존 정보 모두 삭제하기
         AccountManager.inctance.ReadAllUsersFromDatabase(); // 정보 뽑아오기
+        
+        StartCoroutine(ResetMirroring(2));
     }
     
-    // 에러 스크린 버튼 닫기
-    public void CloseErrorScreen()
-    {
-        PunSystem.instance.CloseMenus();
-    }
+    // // 에러 스크린 버튼 닫기
+    // public void CloseErrorScreen()
+    // {
+    //     PunSystem.instance.CloseMenus();
+    // }
 
     public void QuitGame()
     {

@@ -1,7 +1,11 @@
+using System;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using Photon.Realtime;
+using UnityEngine.Serialization;
+using UnityEngine.UI;
+using Cursor = UnityEngine.Cursor;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
 public class PunSystem : MonoBehaviourPunCallbacks
@@ -10,20 +14,15 @@ public class PunSystem : MonoBehaviourPunCallbacks
     
     [Header("로딩")]
     public GameObject loadingScreen;
-    public TMP_Text   loadingText;
-
-    [Header("에러")]
-    public GameObject errorScreen;
-    public TMP_Text   errorText;
+    private Image     loadingBG;        // 백그라운드 이미지
+    
+    [Header("피드백")]
+    public TextMeshProUGUI feedbackText;         // 버튼 클릭 시, 파이어베이스 피드백 텍스트
     
     [Header("로그인")]
     public GameObject      loginScreen;
     public TMP_InputField  nicknameOrEmailInput;
-    // public TextMeshProUGUI placeholderText;      // 텍스트 안 회색 안내 텍스트
     public TMP_InputField  passwordInput;
-    // public Toggle          authorityToggle;      // 권한 토글
-    public TextMeshProUGUI feedbackText;         // 버튼 클릭 시, 파이어베이스 피드백 텍스트
-    // public GameObject      createAccountButton;
     public static bool     hasFistOnLobby;       // ☆ 정적 bool (게임을 끝내고 돌아와서도, true상태로 남아있음) // 맨처음 로비에 입장인지 체크
     
     [Header("미러링")]
@@ -31,6 +30,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
     
     [Header("비디오공유")]
     public GameObject videoShareScreen;
+    public GameObject shareSetting;
     
     [Header("권한승인")]
     public GameObject authorityScreen;
@@ -72,9 +72,9 @@ public class PunSystem : MonoBehaviourPunCallbacks
     void Start()
     {
         CloseMenus();
-
+        
         loadingScreen.SetActive(true);
-        loadingText.text = "Connecting To Network...";
+        loadingBG = loadingScreen.GetComponent<Image>();
 
         if (!PhotonNetwork.IsConnected) // 게임화면에서, 다시 메인메뉴로 돌아와서, 설정세팅을 하는 경우 방지
         {
@@ -89,13 +89,14 @@ public class PunSystem : MonoBehaviourPunCallbacks
     // 서버접속 완료시 호출
     public override void OnConnectedToMaster()
     {
+        loadingScreen.SetActive(false);
+        loadingBG.color = new Color(0f, 0f, 0f, 0.1f); // 처음 이후는, 로딩 패널의 백그라운드를 연하게...
+    
         PhotonNetwork.JoinLobby(); // 로비입장
 
         // 방을 처음 만든 사람이 마스터, 이후 마스터가 방을 나가면, 남아있는 렌덤한 사람에게 마스터 권한이 간다.
         // 마스터가 PhotonNetwork.LoadLevel()을 호출하면, 모든 플레이어가 동일한 레벨을 자동으로 로드(true면 로드 , false면 로드 x) -> StartGame버튼에서 로드레벨 사용
         PhotonNetwork.AutomaticallySyncScene = false;
-
-        loadingText.text = "Joining Lobby...";
     }
 
     // 로비입장 완료시 호출(서버에 접속 시 / 룸에서 복귀 시)
@@ -119,8 +120,6 @@ public class PunSystem : MonoBehaviourPunCallbacks
         //selectRoomScreen.SetActive(false);
         //roomScreen.SetActive(false);
         //roomBrowserScreen.SetActive(false);
-        loadingScreen.SetActive(false);
-        errorScreen.SetActive(false);
         loginScreen.SetActive(false);
         mirroringScreen.SetActive(false);
         videoShareScreen.SetActive(false);
@@ -225,12 +224,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.LeaveRoom();
         CloseMenus();
-        loadingText.text = "Leaving Room";
-        loadingScreen.SetActive(true);
     }
     
-    
-
     // 버튼 함수
     // public void OpenRoomBrowser()
     // {
@@ -282,17 +277,17 @@ public class PunSystem : MonoBehaviourPunCallbacks
     // }
     
     
-    
-    
     // 방 입장 성공 시 호출
     // 미러링 할 유저가 있으면(=방이 만들어져 있음.), 플레이어 리스트를 받아오고,
     // 디코더 등록
     public override void OnJoinedRoom()
     {
+        loadingScreen.SetActive(false);                                                                                                     
+        
         // 버튼 상태 제어
         foreach (var menuButtonLists in MenuButton.instance.menuButtonList)
             menuButtonLists.interactable = true;
-        MenuButton.instance.menuButtonList[0].interactable = false;
+        MenuButton.instance.menuButtonList[0].interactable = false;                                 
 
         // 모니터링 할 플레이어 만들기
         Player[] inRoomPlayerList = PhotonNetwork.PlayerList;
@@ -302,6 +297,15 @@ public class PunSystem : MonoBehaviourPunCallbacks
             if(!(inRoomPlayerLists.CustomProperties.ContainsKey("CMS") && (bool)inRoomPlayerLists.CustomProperties["CMS"]))
                 FM_System.instance.DecoderRegistration(inRoomPlayerLists);
         }
+        
+        if (FM_System.instance.gameViewDecoderList.Count <= 0)
+        {
+            feedbackText.gameObject.SetActive(true);
+            feedbackText.text = "접속 중인 교육생이 없습니다.";
+        }
+        else
+            feedbackText.gameObject.SetActive(false); 
+        
     }
     
     // 접속한 방을 다른 클라이언트가 떠나면, 호출됨.
@@ -312,7 +316,6 @@ public class PunSystem : MonoBehaviourPunCallbacks
     //     // for (int i = 0; i < MenuButton.instance.menuButtonList.Count - 1 ; i++)
     //     //     MenuButton.instance.menuButtonList[i].GetComponent<Button>().interactable = true;
     // }
-    
     
     
     // 방 입장 실패 시 호출
@@ -327,20 +330,17 @@ public class PunSystem : MonoBehaviourPunCallbacks
         // 그 외, 오류 표시
         else
         {
-            // // 나머지, 상호작용 켜기.
-            // foreach (var menuButtonLists in MenuButton.instance.menuButtonList)
-            //     menuButtonLists.GetComponent<Button>().interactable = true;
-        
             Debug.Log(returnCode);
-            errorText.text = "Failed To Create Room: " + message;
+            feedbackText.gameObject.SetActive(true);
+            feedbackText.text = "오류코드 : " + returnCode;
             CloseMenus();
-            errorScreen.SetActive(true);
         }
     }
     
     // 다른 플레이어가 방에서 입장시 호출
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
+        feedbackText.gameObject.SetActive(false);
         FM_System.instance.DecoderRegistration(newPlayer);
     }
     
@@ -348,5 +348,10 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player leftPlayer)
     {
         FM_System.instance.DecoderDelete(leftPlayer);
+        if (FM_System.instance.gameViewDecoderList.Count <= 0)
+        {
+            feedbackText.gameObject.SetActive(true);
+            feedbackText.text = "접속 중인 교육생이 없습니다.";
+        }
     }
 }

@@ -19,7 +19,8 @@ public class AccountManager : MonoBehaviour
 {
     public static AccountManager inctance;
 
-    private string result = "접속을 환영합니다.";
+    [HideInInspector]
+    public string result = "접속을 환영합니다.";
     
     [Header("인증")]
     private FirebaseAuth auth; // 로그인, 회원가입 등에 사용
@@ -50,6 +51,8 @@ public class AccountManager : MonoBehaviour
 
     private void CreateAccount()
     {
+        PunSystem.instance.loadingScreen.SetActive(true);   // 비동기 전이라, 큐 사용 안해도 됨.
+    
         auth.CreateUserWithEmailAndPasswordAsync(PunSystem.instance.nicknameOrEmailInput.text, PunSystem.instance.passwordInput.text)
             .ContinueWith(task => 
             {   
@@ -57,6 +60,7 @@ public class AccountManager : MonoBehaviour
                 {
                     result = "회원가입이 취소되었습니다.";
                     UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
                     return;
                 }
                 
@@ -91,6 +95,7 @@ public class AccountManager : MonoBehaviour
                     }
                     result = errorMessage;
                     UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
                     return;
                 }
 
@@ -109,8 +114,9 @@ public class AccountManager : MonoBehaviour
     }
     
     // 일반 큐 메서드
-    private void QueueFeedbackText() // 큐(메인 스레드)에서 작동.
+    public void QueueFeedbackText() // 큐(메인 스레드)에서 작동.
     {
+        PunSystem.instance.feedbackText.gameObject.SetActive(true);
         PunSystem.instance.feedbackText.text = result;
     }
     
@@ -130,10 +136,14 @@ public class AccountManager : MonoBehaviour
         dbRef.Child("Users").Child(userID).SetRawJsonValueAsync(json); // 데이터베이스의 users
                                                                        //               └── ID
                                                                        //                     └──  Json 형식 내용물
+        
+        PunSystem.instance.loadingScreen.SetActive(false);
     }
 
     public void Login()
     {
+        PunSystem.instance.loadingScreen.SetActive(true);   // 비동기 전이라, 큐 사용 안해도 됨.
+    
         if (!string.IsNullOrEmpty(PunSystem.instance.nicknameOrEmailInput.text))
         {
             auth.SignInWithEmailAndPasswordAsync(PunSystem.instance.nicknameOrEmailInput.text, PunSystem.instance.passwordInput.text).ContinueWith(
@@ -143,6 +153,7 @@ public class AccountManager : MonoBehaviour
                     {
                         result = "로그인이 취소되었습니다.";
                         UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
+                        UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
                         return;
                     }
             
@@ -175,12 +186,14 @@ public class AccountManager : MonoBehaviour
                         }
                         result = errorMessage;
                         UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
+                        UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
                         return;
                     }
                     
                     if (task.IsCompletedSuccessfully)
                     {
                         user = task.Result.User;    // 이메일 참조 등등에 사용
+                        
                         UnityMainThreadDispatcher.instance.CoroutineEnqueue(QueueAuthorityCheck());
                     }
                 });
@@ -255,6 +268,9 @@ public class AccountManager : MonoBehaviour
                 ScreenTransition(bringDTS.authority);
             }
         }
+        
+        PunSystem.instance.loadingScreen.SetActive(false);
+        PunSystem.instance.feedbackText.gameObject.SetActive(false);
     }
     
     private void ScreenTransition(int buttonSee)
@@ -310,6 +326,9 @@ public class AccountManager : MonoBehaviour
     // 권한 승인 : 데이터 가져오기 + 큐에 유저정보프리승인 프리팹 생성 작업 넣기
     public void ReadAllUsersFromDatabase()
     {
+        PunSystem.instance.feedbackText.gameObject.SetActive(true);
+        PunSystem.instance.feedbackText.text = "정보 불러오는 중...";
+    
         dbRef.Child("Users").GetValueAsync().ContinueWith(task => {
             if (task.IsCompleted)
             {
@@ -317,6 +336,8 @@ public class AccountManager : MonoBehaviour
 
                 if (snapshot.Exists)
                 {
+                    bool isAuthorityExist = false; // 권한 승인 요청(권한 1)이 존재하는지 확인
+                            
                     foreach (DataSnapshot userSnapshot in snapshot.Children)
                     {
                         string userID      = userSnapshot.Key;
@@ -325,12 +346,25 @@ public class AccountManager : MonoBehaviour
                         DataToSave data    = JsonUtility.FromJson<DataToSave>(jsonContent);
                         
                         // 권한이 1인, 유저의 데이터들만 승인창에 뜨도록 하기.
-                        if(data.authority == 1)
+                        if (data.authority == 1)
+                        {
+                            isAuthorityExist = true;
                             UnityMainThreadDispatcher.instance.MethodEnqueue(() => QueueRequestUserPanel(userID, jsonContent)); // 형식이 맞지 않는 문제로, 람다식으로 넣기.
+                        }
+                    }
+
+                    if (isAuthorityExist)
+                        PunSystem.instance.loadingScreen.SetActive(false);
+                    else
+                    {
+                        result = "권한 승인 요청이 존재하지 않습니다.";
+                        UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
                     }
                 }
                 else
+                {
                     Debug.LogWarning("데이터베이스에 유저 정보가 없습니다..");
+                }
             }
             else
                 Debug.LogError("데이터베이스에서 데이터를 검색하지 못했습니다. : " + task.Exception);
