@@ -1,9 +1,8 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using Photon.Realtime;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Cursor = UnityEngine.Cursor;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
@@ -29,9 +28,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public GameObject mirroringScreen;
     
     [Header("비디오공유")]
-    public GameObject videoShareScreen;
-    public GameObject shareSetting;
-    
+    public GameObject   videoShareScreen;
+
     [Header("권한승인")]
     public GameObject authorityScreen;
     
@@ -282,30 +280,42 @@ public class PunSystem : MonoBehaviourPunCallbacks
     // 디코더 등록
     public override void OnJoinedRoom()
     {
-        loadingScreen.SetActive(false);                                                                                                     
-        
-        // 버튼 상태 제어
-        foreach (var menuButtonLists in MenuButton.instance.menuButtonList)
-            menuButtonLists.interactable = true;
-        MenuButton.instance.menuButtonList[0].interactable = false;                                 
-
-        // 모니터링 할 플레이어 만들기
-        Player[] inRoomPlayerList = PhotonNetwork.PlayerList;
-        foreach (var inRoomPlayerLists in inRoomPlayerList)
+        // 미러링 룸에 들어온 경우...
+        if (PhotonNetwork.CurrentRoom.Name == "VR Game")
         {
-            // CMS 플레이어는 제외 하도록 한다.
-            if(!(inRoomPlayerLists.CustomProperties.ContainsKey("CMS") && (bool)inRoomPlayerLists.CustomProperties["CMS"]))
-                FM_System.instance.DecoderRegistration(inRoomPlayerLists);
+            // 버튼 상태 제어
+            foreach (var menuButtonLists in MenuButton.instance.menuButtonList)
+                menuButtonLists.interactable = true;
+            MenuButton.instance.menuButtonList[0].interactable = false;
+                                        
+            // 모니터링 할 플레이어 만들기
+            Player[] inRoomPlayerList = PhotonNetwork.PlayerList;
+            foreach (var inRoomPlayerLists in inRoomPlayerList)
+            {
+                // CMS 플레이어는 제외 하도록 한다.
+                if(!(inRoomPlayerLists.CustomProperties.ContainsKey("CMS") && (bool)inRoomPlayerLists.CustomProperties["CMS"]))
+                    FM_System.instance.DecoderRegistration(inRoomPlayerLists);
+            }
+            
+            if (FM_System.instance.gameViewDecoderList.Count <= 0)
+            {
+                feedbackText.gameObject.SetActive(true);
+                feedbackText.text = "접속 중인 교육생이 없습니다.";
+            }
+            else
+                feedbackText.gameObject.SetActive(false);
         }
-        
-        if (FM_System.instance.gameViewDecoderList.Count <= 0)
-        {
-            feedbackText.gameObject.SetActive(true);
-            feedbackText.text = "접속 중인 교육생이 없습니다.";
-        }
+        // 화면공유 룸에 들어온 경우...
         else
-            feedbackText.gameObject.SetActive(false); 
+        {
+            VideoManager.instance.shareSettingButtonList[0].interactable = false; // 영상공유 버튼 끄기    
+            VideoManager.instance.shareSettingButtonList[2].interactable = true;  // 동영상 제어 버튼 켜기
+            
+            feedbackText.gameObject.SetActive(true);
+            feedbackText.text = "VR 영상 공유방을 만들었습니다.";
+        }
         
+        loadingScreen.SetActive(false); // 모든게 끝나고, 로딩창 없애기....
     }
     
     // 접속한 방을 다른 클라이언트가 떠나면, 호출됨.
@@ -322,7 +332,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
     // 미러링 할 유저가 없으면(=방이 말들어져 있지 않음), 방 만들어서 들어가기.
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
-        // 이미 교육용 게임 방이 존재하는 경우
+        // 이미 교육용 게임 방이 존재하는 경우(미러링)
         if (returnCode == 32766)
         {
             PhotonNetwork.JoinRoom("VR Game"); // 방에 입장.
@@ -340,18 +350,28 @@ public class PunSystem : MonoBehaviourPunCallbacks
     // 다른 플레이어가 방에서 입장시 호출
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
-        feedbackText.gameObject.SetActive(false);
-        FM_System.instance.DecoderRegistration(newPlayer);
+        // 미러링 룸에 들어온 경우...
+        if (PhotonNetwork.CurrentRoom.Name == "VR Game")
+        {
+            feedbackText.gameObject.SetActive(false);
+            FM_System.instance.DecoderRegistration(newPlayer);
+        }
+
     }
     
     // 다른 플레이어가 방에서 나갈시 호출
     public override void OnPlayerLeftRoom(Player leftPlayer)
     {
-        FM_System.instance.DecoderDelete(leftPlayer);
-        if (FM_System.instance.gameViewDecoderList.Count <= 0)
+        // 미러링 룸에 들어온 경우...
+        if (PhotonNetwork.CurrentRoom.Name == "VR Game")
         {
-            feedbackText.gameObject.SetActive(true);
-            feedbackText.text = "접속 중인 교육생이 없습니다.";
+            FM_System.instance.DecoderDelete(leftPlayer);
+            if (FM_System.instance.gameViewDecoderList.Count <= 0)
+            {
+                feedbackText.gameObject.SetActive(true);
+                feedbackText.text = "접속 중인 교육생이 없습니다.";
+            }
         }
+
     }
 }

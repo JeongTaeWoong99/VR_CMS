@@ -4213,7 +4213,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   videoPlayer: {fileID: 1246283478}
   audioSource: {fileID: 1246283479}
-  videoPlayButton: {fileID: 592942001}
+  shareSetting: {fileID: 1544857351}
+  shareSettingButtonList:
+  - {fileID: 1416849732}
+  - {fileID: 1128359631}
+  - {fileID: 592942001}
   videoPlayButtonText: {fileID: 766615395}
 --- !u!1 &428647367
 GameObject:
@@ -12019,6 +12023,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1128359628}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1128359631 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5341244945398905267, guid: c3dafe81f46554443b15d3d79217cbd8,
+    type: 3}
+  m_PrefabInstance: {fileID: 1128359628}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1132479556
 GameObject:
   m_ObjectHideFlags: 0
@@ -15583,12 +15599,12 @@ PrefabInstance:
     - target: {fileID: 5341244946824021229, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_text
-      value: "\uC601\uC0C1\n\uC120\uD0DD"
+      value: "\uC601\uC0C1\uC120\uD0DD\n(\uBC29\uB9CC\uB4E4\uAE30)"
       objectReference: {fileID: 0}
     - target: {fileID: 5341244946824021229, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_fontSize
-      value: 30
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: 5341244946824021229, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
@@ -15599,12 +15615,12 @@ PrefabInstance:
     - target: {fileID: 5341244946824021229, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_fontSizeMax
-      value: 30
+      value: 29.49
       objectReference: {fileID: 0}
     - target: {fileID: 5341244946824021229, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_fontSizeBase
-      value: 30
+      value: 22
       objectReference: {fileID: 0}
     - target: {fileID: 5341244946824021229, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
@@ -15633,6 +15649,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1416849729}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1416849732 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5341244945398905267, guid: c3dafe81f46554443b15d3d79217cbd8,
+    type: 3}
+  m_PrefabInstance: {fileID: 1416849729}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1418144280
 GameObject:
   m_ObjectHideFlags: 0
@@ -17129,7 +17157,6 @@ MonoBehaviour:
   passwordInput: {fileID: 1025198178}
   mirroringScreen: {fileID: 93908900}
   videoShareScreen: {fileID: 427175533}
-  shareSetting: {fileID: 1544857351}
   authorityScreen: {fileID: 1854704188}
 --- !u!114 &1545600967
 MonoBehaviour:

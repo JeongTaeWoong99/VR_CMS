@@ -1,6 +1,10 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using Firebase.Extensions;
 using Firebase.Storage;
+using Photon.Pun;
+using Photon.Realtime;
 using SimpleFileBrowser;
 using TMPro;
 using UnityEngine;
@@ -9,14 +13,23 @@ using UnityEngine.Video;
 
 public class VideoManager : MonoBehaviour
 {
+    public static VideoManager instance;
+    
     public VideoPlayer videoPlayer;
     public AudioSource audioSource;
 
     private FirebaseStorage  storage;
     private StorageReference stRef;
 
-    public Button          videoPlayButton;
+    public GameObject      shareSetting;
+    public List<Button>    shareSettingButtonList = new List<Button>();
     public TextMeshProUGUI videoPlayButtonText;
+
+    private void Awake()
+    {
+        instance = this;
+    }
+
     private void Start()
     {
         // storage 세팅
@@ -35,7 +48,8 @@ public class VideoManager : MonoBehaviour
     {
         // 다른 페이지에서 넘어올 때, 초기화
         videoPlayer.targetTexture.Release();    // 재생 후 남아있는 윤곽 제거
-        videoPlayButton.interactable = false;
+        shareSettingButtonList[0].interactable = true;
+        shareSettingButtonList[2].interactable = false;
         videoPlayButtonText.text     = "재생";
         videoPlayer.url              = "";
     }
@@ -72,17 +86,25 @@ public class VideoManager : MonoBehaviour
 
     private void VideoSetting(string[] filePaths)
     {
-        PunSystem.instance.feedbackText.gameObject.SetActive(false);
-    
-        if (filePaths.Length > 0)
+        PunSystem.instance.loadingScreen.SetActive(true);
+        PunSystem.instance.feedbackText.gameObject.SetActive(true);
+        PunSystem.instance.feedbackText.text = "방 생성 및 동영상 세팅 중...";
+
+        if (filePaths.Length > 0 && !PhotonNetwork.InRoom)
         {
-            string filePath = filePaths[0];  // Get the first selected file path
+            string filePath = filePaths[0];  
+            string fileName = FileBrowserHelpers.GetFilename(filePath); // 파일이름
+            
             videoPlayer.url = filePath;
             Debug.Log($"Selected video file: {filePath}");
             
             videoPlayer.Prepare();                
             videoPlayer.Pause();                  // 첫 프레임 화면(동영상 윤곽이 보이도록)
-            videoPlayButton.interactable = true;  // 제어 버튼 켜기
+
+            // 방 만들기
+            RoomOptions options = new RoomOptions();
+            options.MaxPlayers  = 20;
+            PhotonNetwork.CreateRoom(fileName + AccountManager.inctance.user.Email, options, TypedLobby.Default);
         }
     }
     

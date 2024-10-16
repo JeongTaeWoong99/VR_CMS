@@ -24,7 +24,8 @@ public class AccountManager : MonoBehaviour
     
     [Header("인증")]
     private FirebaseAuth auth; // 로그인, 회원가입 등에 사용
-    private FirebaseUser user; // 로그인 성공한 유저 정보
+    [HideInInspector]
+    public FirebaseUser user; // 로그인 성공한 유저 정보
 
     [Header("데이터베이스")] 
     private DatabaseReference dbRef;              // 데이터베이스 참조
