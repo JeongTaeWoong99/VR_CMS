@@ -1,6 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Firebase.Extensions;
 using Firebase.Storage;
 using Photon.Pun;
@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
-public class VideoManager : MonoBehaviour
+public class VideoManager : MonoBehaviourPunCallbacks
 {
     public static VideoManager instance;
     
@@ -24,6 +24,8 @@ public class VideoManager : MonoBehaviour
     public GameObject      shareSetting;
     public List<Button>    shareSettingButtonList = new List<Button>();
     public TextMeshProUGUI videoPlayButtonText;
+
+    public PhotonView photonView;
 
     private void Awake()
     {
@@ -41,7 +43,7 @@ public class VideoManager : MonoBehaviour
                                                              new FileBrowser.Filter( "Video Files", ".mp4"));
         FileBrowser.SetDefaultFilter(".mp4");                                        // 기본 필터를 mp4로 설정
         FileBrowser.SetExcludedExtensions( ".lnk", ".tmp", ".zip", ".rar", ".exe" ); // 검색 제외
-        FileBrowser.AddQuickLink( "Users", "C:\\Users", null);         // 기존 위치
+        FileBrowser.AddQuickLink( "Users", "C:\\Users", null);          // 기존 위치
     }
 
     private void OnEnable()
@@ -52,6 +54,13 @@ public class VideoManager : MonoBehaviour
         shareSettingButtonList[2].interactable = false;
         videoPlayButtonText.text     = "재생";
         videoPlayer.url              = "";
+        
+        // 활성화 할 때, 접속 플레이어 텍스트 프리팹 다 비우기...
+        var children = new List<GameObject>();
+        foreach (Transform child in PunSystem.instance.connectedPlayerGroup.transform)
+            children.Add(child.gameObject);
+        foreach (GameObject child in children)
+            Destroy(child);
     }
 
     // 영상선택 + 업로드 공통 사용
@@ -102,9 +111,12 @@ public class VideoManager : MonoBehaviour
             videoPlayer.Pause();                  // 첫 프레임 화면(동영상 윤곽이 보이도록)
 
             // 방 만들기
+            string[] splitParts = AccountManager.inctance.user.Email.Split('@');
+            string frontPart    = splitParts[0];    // 만든사람 ID
+            
             RoomOptions options = new RoomOptions();
             options.MaxPlayers  = 20;
-            PhotonNetwork.CreateRoom(fileName + AccountManager.inctance.user.Email, options, TypedLobby.Default);
+            PhotonNetwork.CreateRoom(fileName + "$" + frontPart, options, TypedLobby.Default); // $를 통해서, 비디오 이름과 개설자를 구분...
         }
     }
     
@@ -167,17 +179,21 @@ public class VideoManager : MonoBehaviour
     // 동영상 제어 버튼
     public void OnPlayAndStopVideo()
     {
+        // 재생 -> 멈춤
         if (videoPlayer.isPlaying)
         {
             videoPlayButtonText.text = "재생";
             videoPlayer.Pause();    // 영상은 Stop으로 멈추면, 처음으로 돌아가버림.
-            audioSource.Stop();     
+            audioSource.Stop();
+            photonView.RPC("PauseVideo",RpcTarget.Others);
         }
+        // 멈춤 -> 재생
         else
         {
             videoPlayButtonText.text = "정지";
             videoPlayer.Play();  
             audioSource.Play();
+            photonView.RPC("StartVideo", RpcTarget.Others);
         }
     }
 }

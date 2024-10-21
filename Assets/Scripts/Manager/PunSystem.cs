@@ -3,6 +3,7 @@ using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using Photon.Realtime;
+using Unity.VisualScripting;
 using UnityEngine.UI;
 using Cursor = UnityEngine.Cursor;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
@@ -29,6 +30,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
     
     [Header("비디오공유")]
     public GameObject   videoShareScreen;
+    public GameObject   connectedPlayerTextPrefabs;
+    public GameObject   connectedPlayerGroup;
 
     [Header("권한승인")]
     public GameObject authorityScreen;
@@ -356,13 +359,18 @@ public class PunSystem : MonoBehaviourPunCallbacks
             feedbackText.gameObject.SetActive(false);
             FM_System.instance.DecoderRegistration(newPlayer);
         }
-
+        else
+        {
+            // 공유방에 누가 들어왔는지 표시...
+            GameObject connectedPlayerClone = Instantiate(connectedPlayerTextPrefabs, connectedPlayerGroup.transform, true);    
+            connectedPlayerClone.GetComponent<TextMeshProUGUI>().text = newPlayer.NickName;
+        }
     }
     
     // 다른 플레이어가 방에서 나갈시 호출
     public override void OnPlayerLeftRoom(Player leftPlayer)
     {
-        // 미러링 룸에 들어온 경우...
+        // 미러링 룸에 나간 경우...
         if (PhotonNetwork.CurrentRoom.Name == "VR Game")
         {
             FM_System.instance.DecoderDelete(leftPlayer);
@@ -370,6 +378,21 @@ public class PunSystem : MonoBehaviourPunCallbacks
             {
                 feedbackText.gameObject.SetActive(true);
                 feedbackText.text = "접속 중인 교육생이 없습니다.";
+            }
+        }
+        // 공유방에서 나간 경우...
+        else
+        {
+            // 닉네임 체크 및 텍스트 프리팹 삭제해주기
+            foreach (Transform child in connectedPlayerGroup.transform)
+            {
+                TextMeshProUGUI textMesh   = child.GetComponent<TextMeshProUGUI>(); // 텍스트 접근
+                GameObject childGameObject = child.gameObject;                      // 현재 오브젝트
+                if (textMesh != null)
+                {
+                    if (textMesh.text == leftPlayer.NickName)
+                        Destroy(childGameObject);
+                }
             }
         }
 

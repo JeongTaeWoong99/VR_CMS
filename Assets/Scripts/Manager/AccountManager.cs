@@ -23,9 +23,9 @@ public class AccountManager : MonoBehaviour
     public string result = "접속을 환영합니다.";
     
     [Header("인증")]
-    private FirebaseAuth auth; // 로그인, 회원가입 등에 사용
+    private FirebaseAuth auth = null; // 로그인, 회원가입 등에 사용
     [HideInInspector]
-    public FirebaseUser user; // 로그인 성공한 유저 정보
+    public FirebaseUser user = null; // 로그인 성공한 유저 정보
 
     [Header("데이터베이스")] 
     private DatabaseReference dbRef;              // 데이터베이스 참조
