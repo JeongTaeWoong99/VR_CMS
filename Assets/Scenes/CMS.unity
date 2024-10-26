@@ -4167,7 +4167,6 @@ GameObject:
   - component: {fileID: 427175534}
   - component: {fileID: 427175537}
   - component: {fileID: 427175536}
-  - component: {fileID: 427175538}
   m_Layer: 5
   m_Name: VideoShare Panel
   m_TagString: Untagged
@@ -4236,27 +4235,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 427175533}
   m_CullTransparentMesh: 0
---- !u!114 &427175538
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 427175533}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1eab1576d4b13543b756e1693ec8e52, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  videoPlayer: {fileID: 1246283478}
-  audioSource: {fileID: 1246283479}
-  shareSetting: {fileID: 1544857351}
-  shareSettingButtonList:
-  - {fileID: 1416849732}
-  - {fileID: 1128359631}
-  - {fileID: 592942001}
-  videoPlayButtonText: {fileID: 766615395}
-  photonView: {fileID: 1473714138}
 --- !u!1 &428647367
 GameObject:
   m_ObjectHideFlags: 0
@@ -6455,7 +6433,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 427175538}
+      objectReference: {fileID: 622813853}
     - target: {fileID: 5341244945398905267, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
@@ -7123,6 +7101,59 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &622813851
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 622813852}
+  - component: {fileID: 622813853}
+  m_Layer: 0
+  m_Name: Video Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &622813852
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 622813851}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1022.55005, y: 522.01904, z: -7.103609}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &622813853
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 622813851}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1eab1576d4b13543b756e1693ec8e52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  videoPlayer: {fileID: 1246283478}
+  audioSource: {fileID: 1246283479}
+  shareSetting: {fileID: 1544857351}
+  shareSettingButtonList:
+  - {fileID: 1416849732}
+  - {fileID: 1128359631}
+  - {fileID: 592942001}
+  videoPlayButtonText: {fileID: 766615395}
+  photonView: {fileID: 1473714138}
 --- !u!1 &624770573
 GameObject:
   m_ObjectHideFlags: 0
@@ -11862,7 +11893,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 427175538}
+      objectReference: {fileID: 622813853}
     - target: {fileID: 5341244945398905267, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
@@ -15617,7 +15648,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 427175538}
+      objectReference: {fileID: 622813853}
     - target: {fileID: 5341244945398905267, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -20511,8 +20542,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1785045990}
   m_Layer: 0
-  m_Name: ---------------------------------------------------------------------------------------------------
-    (1)
+  m_Name: --------------------------------------------------------------------------------------------------
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -24620,12 +24650,13 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 1780342103}
+  - {fileID: 1698248376}
   - {fileID: 1836969776}
   - {fileID: 1473714139}
   - {fileID: 2059602573}
+  - {fileID: 622813852}
   - {fileID: 1785045990}
   - {fileID: 546544691}
   - {fileID: 1008577389}
-  - {fileID: 1698248376}
   - {fileID: 1545600970}
   - {fileID: 472885968}

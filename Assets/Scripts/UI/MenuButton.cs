@@ -43,28 +43,26 @@ public class MenuButton : MonoBehaviour
                 foreach (var inRoomPlayerLists in inRoomPlayerList)
                     FM_System.instance.DecoderDelete(inRoomPlayerLists);
             }
-            // 화면 공유 화면 -> 다른 화면
+            // 화면 공유 화면(방 만들어져 있는데) -> 다른 화면
+            // RPC를 통해, 접속한 교육생들이 나 방에서 나가게 함.
             else
             {
-                    
+                VideoManager.instance.photonView.RPC("OnReturnToMainMenu",RpcTarget.Others);
             }
             PhotonNetwork.LeaveRoom();  // 방 떠나기
         }
-        Debug.Log("ResetRoomState 실행 1");
         
-        float timeout = 10f;
+        float timeout    = 10f;
         float timeWaited = 0f;
 
         while (!PhotonNetwork.InLobby && timeWaited < timeout)
         {
             timeWaited += Time.deltaTime;
-            yield return null;  // Wait for the next frame
+            yield return null;
         }
         
         if (PhotonNetwork.InLobby)
         {
-            Debug.Log("ResetRoomState 실행 2");
-            
             // 버튼 제어(미러링은 OnJoinRoom 오버라이드 함수에서 제어...)
             // 미러링은 바로, 룸으로 들어가기 때문에...
             if (notInteractableNum == 1 || notInteractableNum == 2)
@@ -92,7 +90,6 @@ public class MenuButton : MonoBehaviour
     
     public void OnMirroring()
     {
-        Debug.Log("Mirroring");
         StartCoroutine(Mirroring());
     }
     
@@ -108,7 +105,6 @@ public class MenuButton : MonoBehaviour
         // 버튼 상태 제어(비활성화)
         foreach (var menuButtonLists in menuButtonList)
             menuButtonLists.interactable = false;
-        VideoManager.instance.shareSetting.gameObject.SetActive(false);    // 쉐어세팅버튼 비활성화
         
         yield return StartCoroutine(ResetRoomState(0));
         
@@ -123,7 +119,6 @@ public class MenuButton : MonoBehaviour
 
     public void OnVideoShare()
     {
-        Debug.Log("VideoShare");
         StartCoroutine(VideoShare());
     }
 
@@ -136,7 +131,27 @@ public class MenuButton : MonoBehaviour
         PunSystem.instance.CloseMenus();
         PunSystem.instance.videoShareScreen.SetActive(true);
         
-        VideoManager.instance.shareSetting.gameObject.SetActive(false);    // 쉐어세팅버튼 비활성화
+        // ----------------------------
+        // 다른 페이지에서 넘어올 때, 초기화
+        VideoManager.instance.videoPlayer.targetTexture.Release();    // 재생 후 남아있는 윤곽 제거
+        VideoManager.instance.shareSettingButtonList[0].interactable = true;
+        VideoManager.instance.shareSettingButtonList[2].interactable = false;
+        VideoManager.instance. videoPlayButtonText.text     = "재생";
+        VideoManager.instance.videoPlayer.url              = "";
+        
+        // 활성화 할 때, 접속 플레이어 텍스트 프리팹 다 비우기...
+        if (PunSystem.instance)
+        {
+            var children = new List<GameObject>();
+            if (PunSystem.instance.connectedPlayerGroup.transform.childCount != 0)
+            {
+                foreach (Transform child in PunSystem.instance.connectedPlayerGroup.transform)
+                    children.Add(child.gameObject);
+                foreach (GameObject child in children)
+                    Destroy(child);
+            }
+        }
+        // --------------------------
         
         yield return StartCoroutine(ResetRoomState(1));
     }
@@ -153,8 +168,6 @@ public class MenuButton : MonoBehaviour
         
         PunSystem.instance.CloseMenus();
         PunSystem.instance.authorityScreen.SetActive(true);
-        
-        VideoManager.instance.shareSetting.gameObject.SetActive(false);    // 쉐어세팅버튼 비활성화
 
         AccountManager.inctance.RemoveAllUsersPrefabs();    // 기존 정보 모두 삭제하기
         AccountManager.inctance.ReadAllUsersFromDatabase(); // 정보 뽑아오기

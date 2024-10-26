@@ -20,18 +20,18 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public TextMeshProUGUI feedbackText;         // 버튼 클릭 시, 파이어베이스 피드백 텍스트
     
     [Header("로그인")]
-    public GameObject      loginScreen;
-    public TMP_InputField  nicknameOrEmailInput;
-    public TMP_InputField  passwordInput;
-    public static bool     hasFistOnLobby;       // ☆ 정적 bool (게임을 끝내고 돌아와서도, true상태로 남아있음) // 맨처음 로비에 입장인지 체크
+    public GameObject     loginScreen;
+    public TMP_InputField nicknameOrEmailInput;
+    public TMP_InputField passwordInput;
+    public static bool    hasFistOnLobby;       // ☆ 정적 bool (게임을 끝내고 돌아와서도, true상태로 남아있음) // 맨처음 로비에 입장인지 체크
     
     [Header("미러링")]
     public GameObject mirroringScreen;
     
     [Header("비디오공유")]
-    public GameObject   videoShareScreen;
-    public GameObject   connectedPlayerTextPrefabs;
-    public GameObject   connectedPlayerGroup;
+    public GameObject videoShareScreen;
+    public GameObject connectedPlayerTextPrefabs;
+    public GameObject connectedPlayerGroup;
 
     [Header("권한승인")]
     public GameObject authorityScreen;
@@ -65,7 +65,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
     {
         instance = this;
 
-        Application.targetFrameRate     = 30; // 게임 프레임 고정
+        Application.targetFrameRate     = 30; // 게임 프레임 고정(모바일 고려)
+        
         PhotonNetwork.SendRate          = 30; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
         PhotonNetwork.SerializationRate = 20; // 초당 동기화되는 데이터 횟수 (기본값 10)
     }
@@ -219,7 +220,9 @@ public class PunSystem : MonoBehaviourPunCallbacks
     //     CloseMenus();
     //     errorScreen.SetActive(true);
     // }
-
+    
+    
+    
     // 만든 방 삭제 및 삭제가 완료되면, Lobby로 다시 접속(Room -> Lobby)
     public void LeaveRoom()
     {

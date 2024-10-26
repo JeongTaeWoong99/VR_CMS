@@ -46,23 +46,6 @@ public class VideoManager : MonoBehaviourPunCallbacks
         FileBrowser.AddQuickLink( "Users", "C:\\Users", null);          // 기존 위치
     }
 
-    private void OnEnable()
-    {
-        // 다른 페이지에서 넘어올 때, 초기화
-        videoPlayer.targetTexture.Release();    // 재생 후 남아있는 윤곽 제거
-        shareSettingButtonList[0].interactable = true;
-        shareSettingButtonList[2].interactable = false;
-        videoPlayButtonText.text     = "재생";
-        videoPlayer.url              = "";
-        
-        // 활성화 할 때, 접속 플레이어 텍스트 프리팹 다 비우기...
-        var children = new List<GameObject>();
-        foreach (Transform child in PunSystem.instance.connectedPlayerGroup.transform)
-            children.Add(child.gameObject);
-        foreach (GameObject child in children)
-            Destroy(child);
-    }
-
     // 영상선택 + 업로드 공통 사용
     private IEnumerator ShowLoadDialogCoroutine(int buttonNum)
     {
@@ -73,17 +56,13 @@ public class VideoManager : MonoBehaviourPunCallbacks
         if (buttonNum == 0)
         {
             if (FileBrowser.Success)
-            {
-                VideoSetting(FileBrowser.Result);   
-            }
+                VideoSetting(FileBrowser.Result);
         }
         // 업로드 버튼
         else if (buttonNum == 1)
         {
             if (FileBrowser.Success)
-            {
                 OnFilesSelected(FileBrowser.Result);
-            }
         }
     }
     
@@ -183,9 +162,9 @@ public class VideoManager : MonoBehaviourPunCallbacks
         if (videoPlayer.isPlaying)
         {
             videoPlayButtonText.text = "재생";
-            videoPlayer.Pause();    // 영상은 Stop으로 멈추면, 처음으로 돌아가버림.
+            videoPlayer.Pause(); // 영상은 Stop으로 멈추면, 처음으로 돌아가버림.
             audioSource.Stop();
-            photonView.RPC("PauseVideo",RpcTarget.Others);
+            photonView.RPC("PauseVideo",RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생)
         }
         // 멈춤 -> 재생
         else
@@ -193,7 +172,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
             videoPlayButtonText.text = "정지";
             videoPlayer.Play();  
             audioSource.Play();
-            photonView.RPC("StartVideo", RpcTarget.Others);
+            photonView.RPC("StartVideo", RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생)
         }
     }
 }

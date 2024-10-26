@@ -355,7 +355,10 @@ public class AccountManager : MonoBehaviour
                     }
 
                     if (isAuthorityExist)
-                        PunSystem.instance.loadingScreen.SetActive(false);
+                    {
+                        result = "승인할 권한 요청을 선택하십시오.";
+                        UnityMainThreadDispatcher.instance.MethodEnqueue(QueueFeedbackText);
+                    }
                     else
                     {
                         result = "권한 승인 요청이 존재하지 않습니다.";
