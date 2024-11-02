@@ -65,7 +65,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
     {
         instance = this;
 
-        Application.targetFrameRate     = 30; // 게임 프레임 고정(모바일 고려)
+        Application.targetFrameRate     = 60; // 게임 프레임 고정
         
         PhotonNetwork.SendRate          = 30; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
         PhotonNetwork.SerializationRate = 20; // 초당 동기화되는 데이터 횟수 (기본값 10)
@@ -314,8 +314,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
         // 화면공유 룸에 들어온 경우...
         else
         {
-            VideoManager.instance.shareSettingButtonList[0].interactable = false; // 영상공유 버튼 끄기    
-            VideoManager.instance.shareSettingButtonList[2].interactable = true;  // 동영상 제어 버튼 켜기
+            VideoManager.instance.shareSettingButtonList[0].interactable = false; // 영상공유 버튼 끄기
             
             feedbackText.gameObject.SetActive(true);
             feedbackText.text = "VR 영상 공유방을 만들었습니다.";

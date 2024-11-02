@@ -1,6 +1,6 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Firebase.Extensions;
 using Firebase.Storage;
 using Photon.Pun;
@@ -8,6 +8,7 @@ using Photon.Realtime;
 using SimpleFileBrowser;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
@@ -20,13 +21,22 @@ public class VideoManager : MonoBehaviourPunCallbacks
 
     private FirebaseStorage  storage;
     private StorageReference stRef;
+    public  PhotonView       photonView;
 
-    public GameObject      shareSetting;
-    public List<Button>    shareSettingButtonList = new List<Button>();
-    public TextMeshProUGUI videoPlayButtonText;
+    public GameObject      videoControllerScreen;                       // 로우 이미지 및 슬라이더 및 버튼 전체 보이기 제어
+    public GameObject      shareSetting;                                // 영상선택, 업로드 전체 보이기 제어
+    public List<Button>    shareSettingButtonList = new List<Button>(); // 영상선택, 업로드 활성 및 비활성화 제어
+    
+    public TextMeshProUGUI videoPlayButtonText;                         // ▶ ■ 버튼 텍스트
+    
+    public Slider          playTimeSliderBar;                           // 플레이 타임 표시 슬라이더바
+    
+    public TextMeshProUGUI currentPlayTimeText;
+    public TextMeshProUGUI maxPlayTimeText;
 
-    public PhotonView photonView;
-
+    [HideInInspector] 
+    private IEnumerator playTimeUIRenewalCo;
+    
     private void Awake()
     {
         instance = this;
@@ -34,6 +44,10 @@ public class VideoManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        // 기본 세팅
+        videoControllerScreen.SetActive(false);
+        playTimeUIRenewalCo = PlayTimeUIRenewal();  // 사용 코루틴(중복 실행을 방지하고자, 하나로 관리)
+    
         // storage 세팅
         storage = FirebaseStorage.DefaultInstance;
         stRef   = storage.GetReferenceFromUrl("gs://cms-login-d93aa.appspot.com/");
@@ -50,7 +64,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
     private IEnumerator ShowLoadDialogCoroutine(int buttonNum)
     {
         yield return FileBrowser.WaitForLoadDialog(FileBrowser.PickMode.Files, true, null, null, "Select Files", "Load" );
-        Debug.Log(FileBrowser.Success);
+        //Debug.Log(FileBrowser.Success);
     
         // 영상선택 버튼
         if (buttonNum == 0)
@@ -96,9 +110,74 @@ public class VideoManager : MonoBehaviourPunCallbacks
             RoomOptions options = new RoomOptions();
             options.MaxPlayers  = 20;
             PhotonNetwork.CreateRoom(fileName + "$" + frontPart, options, TypedLobby.Default); // $를 통해서, 비디오 이름과 개설자를 구분...
+
+            ResetPlayUI();                                      // UI 초기화
+            videoControllerScreen.gameObject.SetActive(true);   // 비디오 컨트롤 보이기
+        }
+    }
+
+    private void ResetPlayUI()
+    {
+        playTimeSliderBar.value  = 0;
+        currentPlayTimeText.text = "00:00:00";
+        maxPlayTimeText.text     = "00:00:00";
+    }
+
+    private IEnumerator PlayTimeUIRenewal()
+    {
+        int hour    = 0;
+        int minutes = 0;
+        int seconds = 0;
+
+        while (true)
+        {
+            // 현재 재생시간 표시
+            hour    = (int)videoPlayer.time / 3600;
+            minutes = (int)(videoPlayer.time%3600) / 60;
+            seconds = (int)(videoPlayer.time%3600) % 60;
+            currentPlayTimeText.text = $"{hour:D2}:{minutes:D2}:{seconds:D2}";
+            
+            // 총 재생시간 표시
+            hour    = (int)videoPlayer.length / 3600;
+            minutes = (int)(videoPlayer.length%3600) / 60;
+            seconds = (int)(videoPlayer.length%3600) % 60;
+            maxPlayTimeText.text = $"{hour:D2}:{minutes:D2}:{seconds:D2}";
+            
+            // 슬라이더 재싱 시간 표시
+            playTimeSliderBar.value = (float)(videoPlayer.time / videoPlayer.length);
+            yield return new WaitForSeconds(1);
         }
     }
     
+    // 동영상 제어 버튼
+    public void OnPlayAndStopVideo()
+    {
+        // 재생 -> 멈춤
+        if (videoPlayer.isPlaying)
+            StopSetting();
+        // 멈춤 -> 재생
+        else
+            PlaySetting();
+    }
+
+    private void PlaySetting()
+    {
+        videoPlayButtonText.text = "■";
+        videoPlayer.Play();  
+        audioSource.Play();
+        photonView.RPC("StartVideo", RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생)
+        StartCoroutine(playTimeUIRenewalCo);
+    }
+
+    public void StopSetting()
+    {
+        videoPlayButtonText.text = "▶";
+        videoPlayer.Pause(); // 영상은 Stop으로 멈추면, 처음으로 돌아가버림.
+        audioSource.Stop();
+        photonView.RPC("PauseVideo",RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생)
+        StopCoroutine(playTimeUIRenewalCo);
+    }
+
     // 업로드 버튼
     public void OnUploadVideo()
     {
@@ -123,7 +202,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
         newMetadata.ContentType = "video/mp4";
 
         StorageReference uploadRef = stRef.Child(fileName);
-
+        
         uploadRef.GetMetadataAsync().ContinueWithOnMainThread((metadataTask) =>
         {
             if (metadataTask.IsFaulted || metadataTask.IsCanceled)
@@ -154,25 +233,5 @@ public class VideoManager : MonoBehaviourPunCallbacks
             }
         });
     }
-    
-    // 동영상 제어 버튼
-    public void OnPlayAndStopVideo()
-    {
-        // 재생 -> 멈춤
-        if (videoPlayer.isPlaying)
-        {
-            videoPlayButtonText.text = "재생";
-            videoPlayer.Pause(); // 영상은 Stop으로 멈추면, 처음으로 돌아가버림.
-            audioSource.Stop();
-            photonView.RPC("PauseVideo",RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생)
-        }
-        // 멈춤 -> 재생
-        else
-        {
-            videoPlayButtonText.text = "정지";
-            videoPlayer.Play();  
-            audioSource.Play();
-            photonView.RPC("StartVideo", RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생)
-        }
-    }
+
 }

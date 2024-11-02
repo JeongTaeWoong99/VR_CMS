@@ -48,6 +48,7 @@ public class MenuButton : MonoBehaviour
             else
             {
                 VideoManager.instance.photonView.RPC("OnReturnToMainMenu",RpcTarget.Others);
+                VideoManager.instance.StopSetting();    // 스탑 세팅도 실행(동영상, 코루틴 등등 멈춰야 할 것)
             }
             PhotonNetwork.LeaveRoom();  // 방 떠나기
         }
@@ -133,11 +134,11 @@ public class MenuButton : MonoBehaviour
         
         // ----------------------------
         // 다른 페이지에서 넘어올 때, 초기화
-        VideoManager.instance.videoPlayer.targetTexture.Release();    // 재생 후 남아있는 윤곽 제거
-        VideoManager.instance.shareSettingButtonList[0].interactable = true;
-        VideoManager.instance.shareSettingButtonList[2].interactable = false;
-        VideoManager.instance. videoPlayButtonText.text     = "재생";
-        VideoManager.instance.videoPlayer.url              = "";
+        VideoManager.instance.videoPlayer.targetTexture.Release();               // 재생 후 남아있는 윤곽 제거
+        VideoManager.instance.shareSettingButtonList[0].interactable = true;     // 버튼 활성화
+        VideoManager.instance.videoControllerScreen.gameObject.SetActive(false); // 동영상 제어 비활성화
+        VideoManager.instance. videoPlayButtonText.text = "▶";
+        VideoManager.instance.videoPlayer.url           = "";
         
         // 활성화 할 때, 접속 플레이어 텍스트 프리팹 다 비우기...
         if (PunSystem.instance)
@@ -158,7 +159,6 @@ public class MenuButton : MonoBehaviour
 
     public void OnAuthority()
     {
-        Debug.Log("Authority");
         StartCoroutine(Authority());
     }
     
