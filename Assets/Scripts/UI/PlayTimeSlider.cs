@@ -1,9 +1,7 @@
-using UnityEngine;
+using Photon.Pun;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using UnityEngine.Video;
 
-public class PlayTimeSlider : MonoBehaviour, IPointerUpHandler
+public class PlayTimeSlider : MonoBehaviourPunCallbacks, IPointerUpHandler
 {
     public void OnPointerUp(PointerEventData eventData)
     {
@@ -13,7 +11,7 @@ public class PlayTimeSlider : MonoBehaviour, IPointerUpHandler
         // 시간 변경
         VideoManager.instance.videoPlayer.time = newTime;
         
-        // ---------
-        // 여기다가 RPC로 보내주면 되겠누 ㅋㅋ
+        // 교육생 RPC 시간 변경
+        FM_System.instance.photonView.RPC("VideoTimeChange", RpcTarget.Others, newTime); // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
     }
 }

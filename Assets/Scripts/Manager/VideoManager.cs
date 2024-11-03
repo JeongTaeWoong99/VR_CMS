@@ -8,7 +8,6 @@ using Photon.Realtime;
 using SimpleFileBrowser;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.Video;
 
@@ -21,7 +20,6 @@ public class VideoManager : MonoBehaviourPunCallbacks
 
     private FirebaseStorage  storage;
     private StorageReference stRef;
-    public  PhotonView       photonView;
 
     public GameObject      videoControllerScreen;                       // 로우 이미지 및 슬라이더 및 버튼 전체 보이기 제어
     public GameObject      shareSetting;                                // 영상선택, 업로드 전체 보이기 제어
@@ -165,16 +163,17 @@ public class VideoManager : MonoBehaviourPunCallbacks
         videoPlayButtonText.text = "■";
         videoPlayer.Play();  
         audioSource.Play();
-        photonView.RPC("StartVideo", RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생)
+        FM_System.instance.photonView.RPC("StartVideo", RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생) // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
         StartCoroutine(playTimeUIRenewalCo);
     }
 
     public void StopSetting()
     {
         videoPlayButtonText.text = "▶";
+        videoPlayButtonText.text = "▶";
         videoPlayer.Pause(); // 영상은 Stop으로 멈추면, 처음으로 돌아가버림.
         audioSource.Stop();
-        photonView.RPC("PauseVideo",RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생)
+        FM_System.instance.photonView.RPC("PauseVideo",RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생) // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
         StopCoroutine(playTimeUIRenewalCo);
     }
 

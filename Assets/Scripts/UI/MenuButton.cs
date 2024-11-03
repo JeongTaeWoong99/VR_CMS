@@ -6,10 +6,10 @@ using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MenuButton : MonoBehaviour
+public class MenuButton : MonoBehaviourPunCallbacks
 {
     public static MenuButton instance;
-    
+
     public List<Button> menuButtonList = new List<Button>();
 
     private void Awake()
@@ -47,8 +47,8 @@ public class MenuButton : MonoBehaviour
             // RPC를 통해, 접속한 교육생들이 나 방에서 나가게 함.
             else
             {
-                VideoManager.instance.photonView.RPC("OnReturnToMainMenu",RpcTarget.Others);
-                VideoManager.instance.StopSetting();    // 스탑 세팅도 실행(동영상, 코루틴 등등 멈춰야 할 것)
+                FM_System.instance.photonView.RPC("OnReturnToMainMenu",RpcTarget.Others); // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
+                VideoManager.instance.StopSetting();                                                // 스탑 세팅도 실행(동영상, 코루틴 등등 멈춰야 할 것)
             }
             PhotonNetwork.LeaveRoom();  // 방 떠나기
         }

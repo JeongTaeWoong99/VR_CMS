@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using Photon.Realtime;
-using Unity.VisualScripting;
 using UnityEngine.UI;
 using Cursor = UnityEngine.Cursor;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
@@ -11,7 +9,7 @@ using Hashtable = ExitGames.Client.Photon.Hashtable;
 public class PunSystem : MonoBehaviourPunCallbacks
 {
     public static PunSystem instance;
-    
+
     [Header("로딩")]
     public GameObject loadingScreen;
     private Image     loadingBG;        // 백그라운드 이미지
@@ -366,6 +364,10 @@ public class PunSystem : MonoBehaviourPunCallbacks
             // 공유방에 누가 들어왔는지 표시...
             GameObject connectedPlayerClone = Instantiate(connectedPlayerTextPrefabs, connectedPlayerGroup.transform, true);    
             connectedPlayerClone.GetComponent<TextMeshProUGUI>().text = newPlayer.NickName;
+            
+            // 비디어 정보 공유(플레이 상태 / 시간 / )
+            double currentTime = VideoManager.instance.playTimeSliderBar.value * VideoManager.instance.videoPlayer.length;
+            FM_System.instance.photonView.RPC("VideoSetting", newPlayer, VideoManager.instance.videoPlayer.isPlaying, currentTime);
         }
     }
     

@@ -8,7 +8,7 @@ using UnityEngine;
 public class FM_System : MonoBehaviourPunCallbacks
 {
     public static FM_System instance;
-    
+
     public List<GameViewDecoder> gameViewDecoderList = new List<GameViewDecoder>();
     
     public FMNetworkManager      fmNetworkManager;
@@ -28,7 +28,9 @@ public class FM_System : MonoBehaviourPunCallbacks
         fm_OnReceivedByteDataEvent = fmNetworkManager.OnReceivedByteDataEvent;  // 위치 받아오기
     }
     
-    [PunRPC]    // ROOM에 입장해서 RPC 사용 가능!
+    // ★ Photon View가 들어가 있어야, RPC 메서드 받기 가능!! ★
+    // ROOM에 입장해서 RPC 사용 가능!
+    [PunRPC]
     public void RPC_SendMessage(byte[] _bytesData, string message)
     {
         if (message.Contains("VideoShare"))
