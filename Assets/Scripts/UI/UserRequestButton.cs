@@ -10,6 +10,6 @@ public class UserRequestButton : MonoBehaviour
     public void RequestButtonClick()
     {
         approveButton.interactable = false;
-        AccountManager.inctance.RequestApproval(emailText.text);
+        AccountManager.instance.RequestApproval(emailText.text);
     }
 }

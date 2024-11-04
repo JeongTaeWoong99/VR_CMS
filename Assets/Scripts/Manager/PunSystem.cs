@@ -33,31 +33,6 @@ public class PunSystem : MonoBehaviourPunCallbacks
 
     [Header("권한승인")]
     public GameObject authorityScreen;
-    
-    // public GameObject     createRoomScreen;
-    // public TMP_InputField roomNameInput;
-
-    // public GameObject     selectRoomScreen;
-    // public TMP_Text       selectedRoomName;
-
-    // public  GameObject     roomScreen;
-    // public  TMP_Text       roomNameText, playerNameLabel;
-    // private List<TMP_Text> allPlayerNames = new List<TMP_Text>();
-    
-    // public GameObject roomBrowserScreen;
-    // public RoomButton theRoomButton; // RoomButton 스크립트 타입의 변수
-    // private List<RoomButton> allRoomButtons = new List<RoomButton>();
-
-
-    // public GameObject startButton;
-    //
-    // public GameObject roomTestButton;
-    //
-    // public string[] allMaps;
-    // public bool     changeMapBetweenRounds = true;
-    //
-    // private List<RoomInfo> currentRoomListInfo = new List<RoomInfo>(); // 룸이 갱신될 때 마다, 정보가 계속 바뀜
-
 
     private void Awake()
     {

@@ -57,7 +57,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
         FileBrowser.SetExcludedExtensions( ".lnk", ".tmp", ".zip", ".rar", ".exe" ); // 검색 제외
         FileBrowser.AddQuickLink( "Users", "C:\\Users", null);          // 기존 위치
     }
-
+    
     // 영상선택 + 업로드 공통 사용
     private IEnumerator ShowLoadDialogCoroutine(int buttonNum)
     {
@@ -68,23 +68,23 @@ public class VideoManager : MonoBehaviourPunCallbacks
         if (buttonNum == 0)
         {
             if (FileBrowser.Success)
-                VideoSetting(FileBrowser.Result);
+                SelectVideo(FileBrowser.Result);
         }
         // 업로드 버튼
         else if (buttonNum == 1)
         {
             if (FileBrowser.Success)
-                OnFilesSelected(FileBrowser.Result);
+                UpLoadVideo(FileBrowser.Result);
         }
     }
     
     // 영상선택 버튼
-    public void OnVideoSelect()
+    public void OnSelectVideo()
     {
         StartCoroutine(ShowLoadDialogCoroutine(0));
     }
 
-    private void VideoSetting(string[] filePaths)
+    private void SelectVideo(string[] filePaths)
     {
         PunSystem.instance.loadingScreen.SetActive(true);
         PunSystem.instance.feedbackText.gameObject.SetActive(true);
@@ -102,7 +102,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
             videoPlayer.Pause();                  // 첫 프레임 화면(동영상 윤곽이 보이도록)
 
             // 방 만들기
-            string[] splitParts = AccountManager.inctance.user.Email.Split('@');
+            string[] splitParts = AccountManager.instance.user.Email.Split('@');
             string frontPart    = splitParts[0];    // 만든사람 ID
             
             RoomOptions options = new RoomOptions();
@@ -183,33 +183,35 @@ public class VideoManager : MonoBehaviourPunCallbacks
         StartCoroutine(ShowLoadDialogCoroutine(1));
     }
     
-    private void OnFilesSelected(string[] filePaths)
+    private void UpLoadVideo(string[] filePaths)
     {
         PunSystem.instance.loadingScreen.SetActive(true);
         
         for (int i = 0; i < filePaths.Length; i++)
             Debug.Log(filePaths[i]);
 
-        string filePath = filePaths[0];                                   // 파일경로
-        string fileName = FileBrowserHelpers.GetFilename(filePath);       // 파일이름
-        byte[] bytes    = FileBrowserHelpers.ReadBytesFromFile(filePath); // 파일정보
+        string filePath      = filePaths[0];                                   // 파일경로
+        string fileName      = FileBrowserHelpers.GetFilename(filePath);       // 파일이름
+        byte[] bytes         = FileBrowserHelpers.ReadBytesFromFile(filePath); // 파일정보
+        string localFileHash = CalculateMD5Hash(bytes);                        // 파일의 MD5 해쉬 정보 계산(단방향 / 덜 안전 / 빠름 / 체크성)
         
         // string destinationPath = Path.Combine( Application.persistentDataPath, FileBrowserHelpers.GetFilename( filePath ));
         // FileBrowserHelpers.CopyFile(filePath, destinationPath);
 
-        var newMetadata = new MetadataChange(); // 저장소의 파일 타입
-        newMetadata.ContentType = "video/mp4";
-
-        StorageReference uploadRef = stRef.Child(fileName);
+        var newMetadata            = new MetadataChange();                                              // 저장소의 파일 타입 생성
+        newMetadata.ContentType    = "video/mp4";                                                       // 타입 변경(저장소 직접 업로드 시, 동영상의 타입으로 맞춰줌)
+        newMetadata.CustomMetadata = new Dictionary<string, string> { { "md5Hash", localFileHash } };   // 해쉬값
         
+        StorageReference uploadRef = stRef.Child(fileName);
         uploadRef.GetMetadataAsync().ContinueWithOnMainThread((metadataTask) =>
         {
+            // 저장소에 같은 파일 이름 존재 X -> 업로드 O
             if (metadataTask.IsFaulted || metadataTask.IsCanceled)
             {
                 if (metadataTask.Exception != null)
                 {
-                    AccountManager.inctance.result = "파일이 존재하지 않습니다. 파일을 업로드 합니다.";
-                    UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.inctance.QueueFeedbackText);
+                    AccountManager.instance.result = "파일이 존재하지 않습니다. 파일을 업로드 합니다.";
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.instance.QueueFeedbackText);
 
                     uploadRef.PutBytesAsync(bytes, newMetadata).ContinueWithOnMainThread((task) =>
                     {
@@ -217,20 +219,52 @@ public class VideoManager : MonoBehaviourPunCallbacks
                             Debug.Log(task.Exception.ToString());
                         else
                         {
-                            AccountManager.inctance.result = fileName + " 업로드 성공.";
-                            UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.inctance.QueueFeedbackText);
+                            AccountManager.instance.result = fileName + "업로드 성공.";
+                            UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.instance.QueueFeedbackText);
                             UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
                         }
                     });
                 }
             }
+            // 저장소에 같은 파일 이름 존재 O -> MD5 해쉬로 체크
             else
             {
-                AccountManager.inctance.result = fileName + " 파일이 이미 존재합니다.";
-                UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.inctance.QueueFeedbackText);
-                UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
+                StorageMetadata metadata       = metadataTask.Result;                      // 파일의 메타정보 받아오기
+                string          remoteFileHash = metadata.GetCustomMetadata("md5Hash"); // 파일의 사용자 정의 메타데이터에 액세스
+
+                // 파일 이름 동일 + 해쉬 정보 동일  -> 업로드 X
+                if (remoteFileHash == localFileHash)
+                {
+                    AccountManager.instance.result = fileName + "파일 이름이 동일하며, 해쉬 정보도 동일합니다.";
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.instance.QueueFeedbackText);
+                    UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
+                }
+                // 파일 이름 동일 + 해쉬 정보 다름. -> 업로드 O
+                else
+                {
+                    AccountManager.instance.result = fileName + " 파일이 존재하지만 정보가 다릅니다. 새 버전 업로드 중...";
+                    uploadRef.PutBytesAsync(bytes, newMetadata).ContinueWithOnMainThread((task) =>
+                    {
+                        if (task.IsFaulted || task.IsCanceled)
+                            Debug.Log(task.Exception.ToString());
+                        else
+                        {
+                            AccountManager.instance.result = fileName + "업로드 성공.";
+                            UnityMainThreadDispatcher.instance.MethodEnqueue(AccountManager.instance.QueueFeedbackText);
+                            UnityMainThreadDispatcher.instance.MethodEnqueue(() => PunSystem.instance.loadingScreen.SetActive(false));
+                        }
+                    });
+                }
             }
         });
+    }
+    
+    // MD5해쉬 계산
+    private string CalculateMD5Hash(byte[] bytes)
+    {
+        using var md5 = System.Security.Cryptography.MD5.Create();
+        byte[] hashBytes = md5.ComputeHash(bytes);
+        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
     }
 
 }

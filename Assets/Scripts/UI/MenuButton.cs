@@ -169,8 +169,8 @@ public class MenuButton : MonoBehaviourPunCallbacks
         PunSystem.instance.CloseMenus();
         PunSystem.instance.authorityScreen.SetActive(true);
 
-        AccountManager.inctance.RemoveAllUsersPrefabs();    // 기존 정보 모두 삭제하기
-        AccountManager.inctance.ReadAllUsersFromDatabase(); // 정보 뽑아오기
+        AccountManager.instance.RemoveAllUsersPrefabs();    // 기존 정보 모두 삭제하기
+        AccountManager.instance.ReadAllUsersFromDatabase(); // 정보 뽑아오기
         
         yield return StartCoroutine(ResetRoomState(2));
     }

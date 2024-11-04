@@ -13,9 +13,9 @@ public class GameViewDecoder : MonoBehaviour
     public float DecoderDelay = 0f;
     private float DecoderDelay_old = 0f;
 
-    public Texture2D ReceivedTexture;
+    public Texture2D  ReceivedTexture;
     public GameObject TestQuad;
-    public RawImage TestImg;
+    public RawImage   TestImg;      // 이미지를 출력해주는 원시 이미지...
 
     public UnityEventTexture2D OnReceivedTexture2D;
 

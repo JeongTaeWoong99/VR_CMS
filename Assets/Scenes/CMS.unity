@@ -8813,7 +8813,7 @@ PrefabInstance:
     - target: {fileID: 5341244945398905267, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnVideoSelect
+      value: OnSelectVideo
       objectReference: {fileID: 0}
     - target: {fileID: 5341244945398905267, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
@@ -8928,7 +8928,7 @@ PrefabInstance:
     - target: {fileID: 5341244945398905278, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}
       propertyPath: m_Name
-      value: Select Video Button
+      value: Select Button
       objectReference: {fileID: 0}
     - target: {fileID: 5341244946824021229, guid: c3dafe81f46554443b15d3d79217cbd8,
         type: 3}

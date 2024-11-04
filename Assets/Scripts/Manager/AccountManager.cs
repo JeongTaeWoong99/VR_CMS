@@ -17,7 +17,7 @@ public class DataToSave
 
 public class AccountManager : MonoBehaviour
 {
-    public static AccountManager inctance;
+    public static AccountManager instance;
 
     [HideInInspector]
     public string result = "접속을 환영합니다.";
@@ -34,7 +34,7 @@ public class AccountManager : MonoBehaviour
 
     private void Awake()
     {
-        inctance = this;
+        instance = this;
     
         dbRef = FirebaseDatabase.DefaultInstance.RootReference;
     }
