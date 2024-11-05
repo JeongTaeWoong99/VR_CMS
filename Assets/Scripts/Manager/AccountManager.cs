@@ -18,7 +18,7 @@ public class DataToSave
 public class AccountManager : MonoBehaviour
 {
     public static AccountManager instance;
-
+    
     [HideInInspector]
     public string result = "접속을 환영합니다.";
     
@@ -42,8 +42,8 @@ public class AccountManager : MonoBehaviour
     private void Start()
     {
 #if UNITY_EDITOR
-        PunSystem.instance.nicknameOrEmailInput.text = "admin@123.com";
-        PunSystem.instance.passwordInput.text        = "admin123";
+        PunSystem.instance.loginEmailInput.text    = "admin@123.com";
+        PunSystem.instance.loginPasswordInput.text = "admin123";
 #endif
 
         auth = FirebaseAuth.DefaultInstance;
@@ -54,7 +54,7 @@ public class AccountManager : MonoBehaviour
     {
         PunSystem.instance.loadingScreen.SetActive(true);   // 비동기 전이라, 큐 사용 안해도 됨.
     
-        auth.CreateUserWithEmailAndPasswordAsync(PunSystem.instance.nicknameOrEmailInput.text, PunSystem.instance.passwordInput.text)
+        auth.CreateUserWithEmailAndPasswordAsync(PunSystem.instance.accountEmailInput.text, PunSystem.instance.accountPasswordInput.text)
             .ContinueWith(task => 
             {   
                 if (task.IsCanceled) 
@@ -129,7 +129,7 @@ public class AccountManager : MonoBehaviour
         DateTime today = DateTime.Now;                   // 생성 날짜 저장
         newDTS.creationDate = today.ToString("yyyy-MM-dd");
         
-        string[] ID_Split = PunSystem.instance.nicknameOrEmailInput.text.Split("@"); // @앞부분 아이디만 가져오기.
+        string[] ID_Split = PunSystem.instance.accountEmailInput.text.Split("@"); // @앞부분 아이디만 가져오기.
         string   userID   = ID_Split[0];                                                     // '@' 앞 부분을 가져옴
         newDTS.Email      = ID_Split[1];                                                     // '@' 뒷 부분을 가져옴(Email 데이터 저장)
         
@@ -137,7 +137,6 @@ public class AccountManager : MonoBehaviour
         dbRef.Child("Users").Child(userID).SetRawJsonValueAsync(json); // 데이터베이스의 users
                                                                        //               └── ID
                                                                        //                     └──  Json 형식 내용물
-        
         PunSystem.instance.loadingScreen.SetActive(false);
     }
 
@@ -145,9 +144,9 @@ public class AccountManager : MonoBehaviour
     {
         PunSystem.instance.loadingScreen.SetActive(true);   // 비동기 전이라, 큐 사용 안해도 됨.
     
-        if (!string.IsNullOrEmpty(PunSystem.instance.nicknameOrEmailInput.text))
+        if (!string.IsNullOrEmpty(PunSystem.instance.loginEmailInput.text))
         {
-            auth.SignInWithEmailAndPasswordAsync(PunSystem.instance.nicknameOrEmailInput.text, PunSystem.instance.passwordInput.text).ContinueWith(
+            auth.SignInWithEmailAndPasswordAsync(PunSystem.instance.loginEmailInput.text, PunSystem.instance.loginPasswordInput.text).ContinueWith(
                 task =>
                 {
                     if (task.IsCanceled) 
@@ -242,12 +241,12 @@ public class AccountManager : MonoBehaviour
     // 코루틴 큐 메서드
     private IEnumerator QueueAuthorityCheck()
     {
-        string[] ID_Split = PunSystem.instance.nicknameOrEmailInput.text.Split("@");  // @앞부분 아이디만 가져오기.
+        string[] ID_Split = PunSystem.instance.loginEmailInput.text.Split("@");  // @앞부분 아이디만 가져오기.
         string   userID   = ID_Split[0];                                                     // '@' 앞 부분을 가져옴
 
         var serverData = dbRef.Child("Users").Child(userID).GetValueAsync(); // 데이터 가져오기
         yield return new WaitUntil(predicate: () => serverData.IsCompleted);                 // GetValueAsync작업이 완료 될 때 까지 기다리기...
-
+        
         DataSnapshot snapshot = serverData.Result;
         string       jsonData = snapshot.GetRawJsonValue();
         
@@ -256,17 +255,20 @@ public class AccountManager : MonoBehaviour
         if (jsonData != null)
         {
             bringDTS = JsonUtility.FromJson<DataToSave>(jsonData);
-            if (bringDTS.authority == 1)        // 1단계 권한 : 접속 허용 X
+            switch (bringDTS.authority)
             {
-                PunSystem.instance.feedbackText.text = "관리자 승인이 필요합니다.";
-            }
-            if (bringDTS.authority == 2)        // 2단계 권한 : 접속 허용 O
-            {
-                ScreenTransition(bringDTS.authority);
-            }
-            else if (bringDTS.authority == 3)   // 3단계 권한 : 관리자
-            {
-                ScreenTransition(bringDTS.authority);
+                // 1단계 권한 : 접속 허용 X
+                case 1:
+                    PunSystem.instance.feedbackText.text = "관리자 승인이 필요합니다.";
+                    break;
+                // 2단계 권한 : 접속 허용 O
+                case 2:
+                    ScreenTransition(bringDTS.authority);
+                    break;
+                // 3단계 권한 : 관리자
+                case 3:
+                    ScreenTransition(bringDTS.authority);
+                    break;
             }
         }
         
@@ -277,7 +279,7 @@ public class AccountManager : MonoBehaviour
     private void ScreenTransition(int buttonSee)
     {
         PunSystem.instance.CloseMenus();
-        PhotonNetwork.NickName = PunSystem.instance.nicknameOrEmailInput.text; // 닉네임 변경
+        PhotonNetwork.NickName = PunSystem.instance.loginEmailInput.text; // 닉네임 변경
         
         foreach (var menuButtonLists in MenuButton.instance.menuButtonList)                 // 버튼 모두 보이기
             menuButtonLists.gameObject.SetActive(true);
@@ -296,34 +298,6 @@ public class AccountManager : MonoBehaviour
         PunSystem.hasFistOnLobby = true;                                                    
     }
 
-    // private void SettingLogin() // 관리자 + 교육생 공통 부분
-    // {
-    //     PunSystem.instance.CloseMenus();
-    //     PhotonNetwork.NickName   = PunSystem.instance.nicknameOrEmailInput.text;
-    //     PunSystem.hasFistOnLobby = true;
-    // }
-    
-    // 로그인 권한 토글
-    // public void AuthorityToggle()
-    // {
-    //     if (PunSystem.instance.authorityToggle.isOn)
-    //     {
-    //         PunSystem.instance.placeholderText.text = "이메일 입력...";
-    //         PunSystem.instance.passwordInput.gameObject.SetActive(true);
-    //         PunSystem.instance.createAccountButton.SetActive(true);
-    //     }
-    //     else
-    //     {
-    //         PunSystem.instance.placeholderText.text = "닉네임 입력...";
-    //         PunSystem.instance.passwordInput.gameObject.SetActive(false);
-    //         PunSystem.instance.createAccountButton.SetActive(false);
-    //     }
-    //     PunSystem.instance.nicknameOrEmailInput.text = "";  // 비우기
-    //     PunSystem.instance.passwordInput.text        = "";  // 비우기
-    // }
-    
-    
-    
     // 권한 승인 : 데이터 가져오기 + 큐에 유저정보프리승인 프리팹 생성 작업 넣기
     public void ReadAllUsersFromDatabase()
     {

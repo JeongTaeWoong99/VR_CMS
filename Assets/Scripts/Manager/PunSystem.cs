@@ -2,6 +2,7 @@ using UnityEngine;
 using Photon.Pun;
 using TMPro;
 using Photon.Realtime;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Cursor = UnityEngine.Cursor;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
@@ -12,16 +13,21 @@ public class PunSystem : MonoBehaviourPunCallbacks
 
     [Header("로딩")]
     public GameObject loadingScreen;
-    private Image     loadingBG;        // 백그라운드 이미지
+    private Image     loadingBG;                // 백그라운드 이미지
     
     [Header("피드백")]
-    public TextMeshProUGUI feedbackText;         // 버튼 클릭 시, 파이어베이스 피드백 텍스트
+    public TextMeshProUGUI feedbackText;        // 버튼 클릭 시, 파이어베이스 피드백 텍스트
     
     [Header("로그인")]
     public GameObject     loginScreen;
-    public TMP_InputField nicknameOrEmailInput;
-    public TMP_InputField passwordInput;
+    public TMP_InputField loginEmailInput;
+    public TMP_InputField loginPasswordInput;
     public static bool    hasFistOnLobby;       // ☆ 정적 bool (게임을 끝내고 돌아와서도, true상태로 남아있음) // 맨처음 로비에 입장인지 체크
+    
+    [Header("계정생성")]
+    public GameObject     accountScreen;
+    public TMP_InputField accountEmailInput;
+    public TMP_InputField accountPasswordInput;
     
     [Header("미러링")]
     public GameObject mirroringScreen;
@@ -374,6 +380,10 @@ public class PunSystem : MonoBehaviourPunCallbacks
                 }
             }
         }
+    }
 
+    public void AccountPanelOnOff()
+    {
+        accountScreen.gameObject.SetActive(!accountScreen.gameObject.activeInHierarchy);
     }
 }
