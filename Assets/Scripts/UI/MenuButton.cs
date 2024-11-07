@@ -137,8 +137,8 @@ public class MenuButton : MonoBehaviourPunCallbacks
         VideoManager.instance.videoPlayer.targetTexture.Release();               // 재생 후 남아있는 윤곽 제거
         VideoManager.instance.shareSettingButtonList[0].interactable = true;     // 버튼 활성화
         VideoManager.instance.videoControllerScreen.gameObject.SetActive(false); // 동영상 제어 비활성화
-        VideoManager.instance. videoPlayButtonText.text = "▶";
-        VideoManager.instance.videoPlayer.url           = "";
+        VideoManager.instance.VideoPlayButtonImage.sprite = VideoManager.instance.playSprite;
+        VideoManager.instance.videoPlayer.url             = "";
         
         // 활성화 할 때, 접속 플레이어 텍스트 프리팹 다 비우기...
         if (PunSystem.instance)

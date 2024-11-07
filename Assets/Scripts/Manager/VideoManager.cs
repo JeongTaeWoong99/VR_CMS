@@ -25,8 +25,12 @@ public class VideoManager : MonoBehaviourPunCallbacks
     public GameObject      shareSetting;                                // 영상선택, 업로드 전체 보이기 제어
     public List<Button>    shareSettingButtonList = new List<Button>(); // 영상선택, 업로드 활성 및 비활성화 제어
     
-    public TextMeshProUGUI videoPlayButtonText;                         // ▶ ■ 버튼 텍스트
+    //public TextMeshProUGUI videoPlayButtonText;                         // ▶ ■ 버튼 텍스트
+    public Image  VideoPlayButtonImage;
+    public Sprite playSprite;
+    public Sprite stopSprite;
     
+
     public Slider          playTimeSliderBar;                           // 플레이 타임 표시 슬라이더바
     
     public TextMeshProUGUI currentPlayTimeText;
@@ -160,7 +164,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
 
     private void PlaySetting()
     {
-        videoPlayButtonText.text = "■";
+        VideoPlayButtonImage.sprite = stopSprite;
         videoPlayer.Play();  
         audioSource.Play();
         FM_System.instance.photonView.RPC("StartVideo", RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생) // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
@@ -169,8 +173,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
 
     public void StopSetting()
     {
-        videoPlayButtonText.text = "▶";
-        videoPlayButtonText.text = "▶";
+        VideoPlayButtonImage.sprite = playSprite;
         videoPlayer.Pause(); // 영상은 Stop으로 멈추면, 처음으로 돌아가버림.
         audioSource.Stop();
         FM_System.instance.photonView.RPC("PauseVideo",RpcTarget.Others); // 접속한 다른 교육생의 재생 제어(유일한 CMS / 나머지 교육생) // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
