@@ -43,11 +43,12 @@ public class PunSystem : MonoBehaviourPunCallbacks
     private void Awake()
     {
         instance = this;
-
-        Application.targetFrameRate     = 60; // 게임 프레임 고정
         
-        PhotonNetwork.SendRate          = 30; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
-        PhotonNetwork.SerializationRate = 20; // 초당 동기화되는 데이터 횟수 (기본값 10)
+        Application.targetFrameRate     = 60; // 게임 프레임 고정
+
+        // CMS는 크게 트레픽 상관 없음.        
+        // PhotonNetwork.SendRate          = 20; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
+        // PhotonNetwork.SerializationRate = 10; // 초당 동기화되는 데이터 횟수 (기본값 10)
     }
 
     void Start()

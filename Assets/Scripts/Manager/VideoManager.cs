@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using ExitGames.Client.Photon;
 using Firebase.Extensions;
 using Firebase.Storage;
 using Photon.Pun;
@@ -112,7 +113,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
             RoomOptions options = new RoomOptions();
             options.MaxPlayers  = 20;
             PhotonNetwork.CreateRoom(fileName + "$" + frontPart, options, TypedLobby.Default); // $를 통해서, 비디오 이름과 개설자를 구분...
-
+            
             ResetPlayUI();                                      // UI 초기화
             videoControllerScreen.gameObject.SetActive(true);   // 비디오 컨트롤 보이기
         }

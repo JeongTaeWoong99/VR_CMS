@@ -35,7 +35,6 @@ public class FM_System : MonoBehaviourPunCallbacks
     {
         if (message.Contains("VideoShare"))
         {
-            Debug.Log("시그널");
             foreach (var gameViewDecoderListS in gameViewDecoderList)
             {
                 if(!gameViewDecoderListS.TestImg.IsActive())                 

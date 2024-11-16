@@ -108,7 +108,7 @@ public class AccountManager : MonoBehaviour
                     
                     // 데이터베이스 : 필요 내용 저장(이메일 / 권한  등등등)
                     UnityMainThreadDispatcher.instance.MethodEnqueue(QueueDataBaseSave);
-                    
+
                     return;
                 }
             });
@@ -138,6 +138,9 @@ public class AccountManager : MonoBehaviour
                                                                        //               └── ID
                                                                        //                     └──  Json 형식 내용물
         PunSystem.instance.loadingScreen.SetActive(false);
+        PunSystem.instance.accountScreen.SetActive(false);
+        PunSystem.instance.accountEmailInput.text    = "";
+        PunSystem.instance.accountPasswordInput.text = "";
     }
 
     public void Login()
@@ -259,13 +262,14 @@ public class AccountManager : MonoBehaviour
             {
                 // 1단계 권한 : 접속 허용 X
                 case 1:
+                    PunSystem.instance.feedbackText.gameObject.SetActive(true);
                     PunSystem.instance.feedbackText.text = "관리자 승인이 필요합니다.";
                     break;
                 // 2단계 권한 : 접속 허용 O
                 case 2:
                     ScreenTransition(bringDTS.authority);
                     break;
-                // 3단계 권한 : 관리자
+                // 3단계 권한 : 접속 허용 O(관리자)
                 case 3:
                     ScreenTransition(bringDTS.authority);
                     break;
@@ -273,12 +277,12 @@ public class AccountManager : MonoBehaviour
         }
         
         PunSystem.instance.loadingScreen.SetActive(false);
-        PunSystem.instance.feedbackText.gameObject.SetActive(false);
     }
     
     private void ScreenTransition(int buttonSee)
     {
         PunSystem.instance.CloseMenus();
+        PunSystem.instance.feedbackText.gameObject.SetActive(false);
         PhotonNetwork.NickName = PunSystem.instance.loginEmailInput.text; // 닉네임 변경
         
         foreach (var menuButtonLists in MenuButton.instance.menuButtonList)                 // 버튼 모두 보이기

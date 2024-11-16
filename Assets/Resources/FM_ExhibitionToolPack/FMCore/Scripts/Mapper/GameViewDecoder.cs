@@ -36,11 +36,21 @@ public class GameViewDecoder : MonoBehaviour
 
     public void Action_ProcessImageData(byte[] _byteData)
     {
-        if (!enabled) return;
-        if (_byteData.Length <= 8) return;
+        if (!enabled)
+        {
+            return;
+        }
+
+        if (_byteData.Length <= 8)
+        {
+            return;
+        }
 
         int _label = BitConverter.ToInt32(_byteData, 0);
-        if (_label != label) return;
+        if (_label != label)
+        {
+            return;
+        }
         int _dataID = BitConverter.ToInt32(_byteData, 4);
 
         if (_dataID != dataID) receivedLength = 0;
@@ -53,7 +63,7 @@ public class GameViewDecoder : MonoBehaviour
         if (receivedLength == 0) dataByte = new byte[dataLength];
         receivedLength += _byteData.Length - 17;
         Buffer.BlockCopy(_byteData, 17, dataByte, _offset, _byteData.Length - 17);
-
+        
         if (ReadyToGetFrame)
         {
             if (receivedLength == dataLength)
