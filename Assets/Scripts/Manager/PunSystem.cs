@@ -267,7 +267,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         // 미러링 룸에 들어온 경우...
-        if (PhotonNetwork.CurrentRoom.Name == "VR Game")
+        if (PhotonNetwork.CurrentRoom.Name == "Space")
         {
             // 버튼 상태 제어
             foreach (var menuButtonLists in MenuButton.instance.menuButtonList)
@@ -320,7 +320,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
         // 이미 교육용 게임 방이 존재하는 경우(미러링)
         if (returnCode == 32766)
         {
-            PhotonNetwork.JoinRoom("VR Game"); // 방에 입장.
+            PhotonNetwork.JoinRoom("Space"); // 방에 입장.
         }
         // 그 외, 오류 표시
         else
@@ -336,7 +336,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player newPlayer)
     {
         // 미러링 룸에 들어온 경우...
-        if (PhotonNetwork.CurrentRoom.Name == "VR Game")
+        if (PhotonNetwork.CurrentRoom.Name == "Space")
         {
             feedbackText.gameObject.SetActive(false);
             FM_System.instance.DecoderRegistration(newPlayer);
@@ -357,7 +357,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public override void OnPlayerLeftRoom(Player leftPlayer)
     {
         // 미러링 룸에 나간 경우...
-        if (PhotonNetwork.CurrentRoom.Name == "VR Game")
+        if (PhotonNetwork.CurrentRoom.Name == "Space")
         {
             FM_System.instance.DecoderDelete(leftPlayer);
             if (FM_System.instance.gameViewDecoderList.Count <= 0)

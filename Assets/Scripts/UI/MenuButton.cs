@@ -37,7 +37,7 @@ public class MenuButton : MonoBehaviourPunCallbacks
         {
             // 모니터링 버튼 화면 -> 다른 화면 누르면
             // 미러링 등록된, 플레이어 모두 제거
-            if (PhotonNetwork.CurrentRoom.Name == "VR Game")
+            if (PhotonNetwork.CurrentRoom.Name == "Space")
             {
                 Player[] inRoomPlayerList = PhotonNetwork.PlayerList;
                 foreach (var inRoomPlayerLists in inRoomPlayerList)
@@ -114,7 +114,7 @@ public class MenuButton : MonoBehaviourPunCallbacks
         {
             RoomOptions options = new RoomOptions();
             options.MaxPlayers  = 20;
-            PhotonNetwork.CreateRoom("VR Game", options, TypedLobby.Default);   // 방이 있으면, 내장함수를 통해 Join으로 들어감.
+            PhotonNetwork.CreateRoom("Space", options, TypedLobby.Default);   // 방이 있으면, 내장함수를 통해 Join으로 들어감.
         }
     }
 
