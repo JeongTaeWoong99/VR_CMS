@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Photon.Pun;
 using Photon.Realtime;
@@ -28,18 +27,33 @@ public class ImageVisibilityInScrollRect : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (scrollRect != null && viewportTransform != null)
+        ViewCheck();
+    }
+
+    private void ViewCheck()
+    {
+        if (scrollRect != null && viewportTransform != null && PhotonNetwork.InRoom)
         {
             bool isVisibleNow = IsImageVisibleInViewport();
             
-            // 가시성 변경 사항을 확인하고, 적절한 디버그 메시지를 출력합니다.
+            Debug.Log(isVisibleNow + " && " + !wasVisibleLastFrame + " = 보임."  );
+            Debug.Log(!isVisibleNow + " && " + wasVisibleLastFrame + " = 보이지 않음."  );
             if (isVisibleNow && !wasVisibleLastFrame)
             {
                 Player targetTrainee = PhotonNetwork.PlayerListOthers.FirstOrDefault(p => p.CustomProperties.ContainsKey("Trainee") && (string)p.CustomProperties["Trainee"] == nickNameText.text);
                 if (targetTrainee != null)
                 {
+                    wasVisibleLastFrame = isVisibleNow; // wasVisibleLastFrame 상태 변경...
                     FM_System.instance.photonView.RPC("Watching", targetTrainee, isVisibleNow); // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
                     Debug.Log(targetTrainee + " 상태 변경 -> true");
+                }
+                else
+                {
+                    foreach (var VARIABLE in PhotonNetwork.PlayerList)
+                    {
+                        Debug.Log(PhotonNetwork.CurrentRoom.Name + " | " + VARIABLE.NickName);
+                    }
+                    Debug.Log("targetTrainee 찾지 못함...!");
                 }
             }
             else if (!isVisibleNow && wasVisibleLastFrame)
@@ -47,13 +61,15 @@ public class ImageVisibilityInScrollRect : MonoBehaviour
                 Player targetTrainee = PhotonNetwork.PlayerListOthers.FirstOrDefault(p => p.CustomProperties.ContainsKey("Trainee") && (string)p.CustomProperties["Trainee"] == nickNameText.text);
                 if (targetTrainee != null)
                 {
+                    wasVisibleLastFrame = isVisibleNow; // wasVisibleLastFrame 상태 변경...
                     FM_System.instance.photonView.RPC("Watching", targetTrainee, isVisibleNow); // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
                     Debug.Log(targetTrainee + " 상태 변경 -> false");
                 }
+                else
+                {
+                    Debug.Log("targetTrainee 찾지 못함...!!");
+                }
             }
-
-            // 보이는 상태 업데이트
-            wasVisibleLastFrame = isVisibleNow;
         }
     }
 

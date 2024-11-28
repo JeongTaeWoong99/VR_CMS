@@ -44,11 +44,10 @@ public class PunSystem : MonoBehaviourPunCallbacks
     {
         instance = this;
         
-        Application.targetFrameRate     = 60; // 게임 프레임 고정
-
-        // CMS는 크게 트레픽 상관 없음.        
-        // PhotonNetwork.SendRate          = 20; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
-        // PhotonNetwork.SerializationRate = 10; // 초당 동기화되는 데이터 횟수 (기본값 10)
+        Application.targetFrameRate = 60; // 게임 프레임 고정
+        
+        PhotonNetwork.SendRate          = 10; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
+        PhotonNetwork.SerializationRate = 10;  // 초당 동기화되는 데이터 횟수 (기본값 10)
     }
 
     void Start()
@@ -91,7 +90,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
             loginScreen.SetActive(true);
         }
         
-        // CMS 접속 플레이어 구분 헤쉬테이블 추가
+        // CMS 접속 플레이어 구분 헤쉬테이블 추가(CMS 이름으로만 구분하면 되기 때문에, Lobby에 넣어도 됨. 클라는 안됨. 닉네임이 설정되고, 해쉬테이블을 넣어줘야 함.)
         Hashtable playerProperties = new Hashtable { { "CMS", true } };
         PhotonNetwork.LocalPlayer.SetCustomProperties(playerProperties);
     }
