@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Photon.Pun;
 using Photon.Realtime;
@@ -10,7 +11,10 @@ public class ImageVisibilityInScrollRect : MonoBehaviour
     private RectTransform rectTransform;
     private ScrollRect    scrollRect;
     private RectTransform viewportTransform;
-    private bool          wasVisibleLastFrame = false;
+
+    [HideInInspector]
+    public  bool isVisibleNow;                  // FM_System에서 isVisibleNow가 true인 경우, 투명도 1로 바꾸기 위함.
+    private bool wasVisibleLastFrame = false;
 
     public TextMeshProUGUI nickNameText;
 
@@ -32,15 +36,22 @@ public class ImageVisibilityInScrollRect : MonoBehaviour
 
     private void ViewCheck()
     {
-        if (scrollRect != null && viewportTransform != null && PhotonNetwork.InRoom)
+        // ※ BigMirroringCanvas.instance.backPanel이 active하지 않을 때, 스크롤 뷰 체크.
+        // 6개의 화면에서, 내려가거나 올라가는 경우가 생길 때, 멈추지 않게 하기 위함.
+        if (scrollRect != null && viewportTransform != null && PhotonNetwork.InRoom && !BigMirroingCanvas.instance.backPanel.activeInHierarchy)
         {
-            bool isVisibleNow = IsImageVisibleInViewport();
+            isVisibleNow = IsImageVisibleInViewport();
             
-            Debug.Log(isVisibleNow + " && " + !wasVisibleLastFrame + " = 보임."  );
-            Debug.Log(!isVisibleNow + " && " + wasVisibleLastFrame + " = 보이지 않음."  );
+            // Debug.Log( isVisibleNow + " && " + !wasVisibleLastFrame + " = 보임.");
+            // Debug.Log(!isVisibleNow + " && " +  wasVisibleLastFrame + " = 보이지 않음.");
+            
+            // '/' 이전의 부분을 제거한 텍스트를 가져오기(씬 이름 부분 제거)
+            string filteredNickName = nickNameText.text.Substring(nickNameText.text.IndexOf('/') + 1);
+            
             if (isVisibleNow && !wasVisibleLastFrame)
             {
-                Player targetTrainee = PhotonNetwork.PlayerListOthers.FirstOrDefault(p => p.CustomProperties.ContainsKey("Trainee") && (string)p.CustomProperties["Trainee"] == nickNameText.text);
+                // 타겟 플레이어 찾기
+                Player targetTrainee = PhotonNetwork.PlayerListOthers.FirstOrDefault(p => p.CustomProperties.ContainsKey("Trainee") && (string)p.CustomProperties["Trainee"] == filteredNickName);
                 if (targetTrainee != null)
                 {
                     wasVisibleLastFrame = isVisibleNow; // wasVisibleLastFrame 상태 변경...
@@ -49,21 +60,19 @@ public class ImageVisibilityInScrollRect : MonoBehaviour
                 }
                 else
                 {
-                    foreach (var VARIABLE in PhotonNetwork.PlayerList)
-                    {
-                        Debug.Log(PhotonNetwork.CurrentRoom.Name + " | " + VARIABLE.NickName);
-                    }
                     Debug.Log("targetTrainee 찾지 못함...!");
                 }
             }
             else if (!isVisibleNow && wasVisibleLastFrame)
             {
-                Player targetTrainee = PhotonNetwork.PlayerListOthers.FirstOrDefault(p => p.CustomProperties.ContainsKey("Trainee") && (string)p.CustomProperties["Trainee"] == nickNameText.text);
+                Player targetTrainee = PhotonNetwork.PlayerListOthers.FirstOrDefault(p => p.CustomProperties.ContainsKey("Trainee") && (string)p.CustomProperties["Trainee"] == filteredNickName);
                 if (targetTrainee != null)
                 {
                     wasVisibleLastFrame = isVisibleNow; // wasVisibleLastFrame 상태 변경...
                     FM_System.instance.photonView.RPC("Watching", targetTrainee, isVisibleNow); // FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
                     Debug.Log(targetTrainee + " 상태 변경 -> false");
+                    
+                    gameObject.GetComponent<RawImage>().color = new Color(1, 1, 1, 0); // 투명도 = 0 (안 보이게)
                 }
                 else
                 {
@@ -73,7 +82,7 @@ public class ImageVisibilityInScrollRect : MonoBehaviour
         }
     }
 
-    bool IsImageVisibleInViewport()
+    private bool IsImageVisibleInViewport()
     {
         // 눈에 보이는 상태가 변경된 경우에만 오류가 발생했습니다.
         Rect viewportRect             = viewportTransform.rect;

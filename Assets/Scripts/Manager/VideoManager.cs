@@ -31,14 +31,15 @@ public class VideoManager : MonoBehaviourPunCallbacks
     public Sprite playSprite;
     public Sprite stopSprite;
     
-
     public Slider          playTimeSliderBar;                           // 플레이 타임 표시 슬라이더바
     
     public TextMeshProUGUI currentPlayTimeText;
     public TextMeshProUGUI maxPlayTimeText;
 
     [HideInInspector] 
-    private IEnumerator playTimeUIRenewalCo;
+    private IEnumerator    playTimeUIRenewalCo;
+
+    public Slider          SoundSliderBar;
     
     private void Awake()
     {
@@ -114,16 +115,21 @@ public class VideoManager : MonoBehaviourPunCallbacks
             options.MaxPlayers  = 20;
             PhotonNetwork.CreateRoom(fileName + "$" + frontPart, options, TypedLobby.Default); // $를 통해서, 비디오 이름과 개설자를 구분...
             
-            ResetPlayUI();                                      // UI 초기화
+            ResetVideoSetting();                                      // UI 초기화
             videoControllerScreen.gameObject.SetActive(true);   // 비디오 컨트롤 보이기
         }
     }
 
-    private void ResetPlayUI()
+    private void ResetVideoSetting()
     {
+        // 동영상 초기화
         playTimeSliderBar.value  = 0;
         currentPlayTimeText.text = "00:00:00";
         maxPlayTimeText.text     = "00:00:00";
+        
+        // 비디오 볼륨 + 사운드 슬라이더 초기화
+        SoundSliderBar.value = 0.5f;
+        audioSource.volume   = 0.5f;
     }
 
     private IEnumerator PlayTimeUIRenewal()

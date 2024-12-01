@@ -203,7 +203,7 @@ GameObject:
   - component: {fileID: 5855005306402887960}
   - component: {fileID: 6769887327323533849}
   - component: {fileID: 4202691188294748181}
-  - component: {fileID: 6860532042506193055}
+  - component: {fileID: 8314569148889688193}
   m_Layer: 0
   m_Name: RawImage(Visible Check)
   m_TagString: Untagged
@@ -251,7 +251,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -265,7 +265,7 @@ MonoBehaviour:
     y: 0
     width: 1
     height: 1
---- !u!114 &6860532042506193055
+--- !u!114 &8314569148889688193
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -277,6 +277,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d813ed1deaa699479d7ddf05f6ae4ca, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isVisibleNow: 0
   nickNameText: {fileID: 8758753348834666796}
 --- !u!1 &4665544933785996805
 GameObject:
@@ -343,7 +344,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uB2C9\uB124\uC784"
+  m_text: "\uC52C\uC774\uB984/\uB2C9\uB124\uC784"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8087ba8c95a491c41ae1d0a76cdaa6c8, type: 2}
   m_sharedMaterial: {fileID: -684583257142655079, guid: 8087ba8c95a491c41ae1d0a76cdaa6c8,
@@ -371,12 +372,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 44.8
+  m_fontSize: 40
   m_fontSizeBase: 13
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_fontSizeMin: 12
+  m_fontSizeMax: 40
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -501,6 +502,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6167176383792342090}
   - component: {fileID: 6225048001919479351}
+  - component: {fileID: 5969382889969808381}
   m_Layer: 5
   m_Name: Mirroring Screen(+Decoder)
   m_TagString: Untagged
@@ -526,8 +528,8 @@ RectTransform:
   - {fileID: 4784793775270087643}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -539,3 +541,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9109628599426663421}
   m_CullTransparentMesh: 1
+--- !u!114 &5969382889969808381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9109628599426663421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7a4adcbf23290e4caba7da853563418, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bigRawImage: {fileID: 6166417882444933509}
+  gameViewDecoder: {fileID: 0}
+  nickNameText: {fileID: 8758753348834666796}

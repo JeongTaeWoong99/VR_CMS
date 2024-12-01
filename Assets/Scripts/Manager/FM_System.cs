@@ -35,11 +35,11 @@ public class FM_System : MonoBehaviourPunCallbacks
     {
         if (message.Contains("VideoShare"))
         {
-            foreach (var gameViewDecoderListS in gameViewDecoderList)
+            foreach (var gameViewDecoderLists in gameViewDecoderList)
             {
-                if(!gameViewDecoderListS.TestImg.IsActive())                 
-                    gameViewDecoderListS.TestImg.gameObject.SetActive(true);
-                gameViewDecoderListS.Action_ProcessImageData(_bytesData);
+                if(gameViewDecoderLists.TestImg.GetComponent<ImageVisibilityInScrollRect>().isVisibleNow)
+                    gameViewDecoderLists.TestImg.color = new Color(1, 1, 1, 1); // 투명도 = 1 (보이게 하기)
+                gameViewDecoderLists.Action_ProcessImageData(_bytesData);
             }
         }
     }
@@ -52,8 +52,10 @@ public class FM_System : MonoBehaviourPunCallbacks
         
         fm_OnReceivedByteDataEvent.AddListener(cloneDecoder.Action_ProcessImageData); // 디코더를 이벤트 등록.
         cloneDecoder.label = player.ActorNumber;                                      // 디코더의 라벨 번호와 엑터 넘버를 일치.LogWarning("Invalid ActorNumber for player: " + player.ActorNumber);
-        cloneText.GetComponent<TextMeshProUGUI>().text = player.NickName;             // 디코더 프리팹의 텍스트에 넥네임 표시.
         
+        string sceneName = player.CustomProperties.ContainsKey("SceneName") ? player.CustomProperties["SceneName"] as string : "알 수 없는 씬";  // 씬이름 찾기
+        cloneText.text = $"{sceneName}/{player.NickName}";                                                                                     // 씬이름 + 닉네임
+
         gameViewDecoderList.Add(cloneDecoder);
     }
     

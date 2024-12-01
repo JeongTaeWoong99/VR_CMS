@@ -46,8 +46,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
         
         Application.targetFrameRate = 60; // 게임 프레임 고정
         
-        PhotonNetwork.SendRate          = 10; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
-        PhotonNetwork.SerializationRate = 10;  // 초당 동기화되는 데이터 횟수 (기본값 10)
+        // PhotonNetwork.SendRate          = 10; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
+        // PhotonNetwork.SerializationRate = 10;  // 초당 동기화되는 데이터 횟수 (기본값 10)
     }
 
     void Start()
@@ -346,9 +346,10 @@ public class PunSystem : MonoBehaviourPunCallbacks
             GameObject connectedPlayerClone = Instantiate(connectedPlayerTextPrefabs, connectedPlayerGroup.transform, true);    
             connectedPlayerClone.GetComponent<TextMeshProUGUI>().text = newPlayer.NickName;
             
-            // 비디어 정보 공유(플레이 상태 / 시간 / )
+            Debug.Log(VideoManager.instance.audioSource.volume);
+            // 비디어 정보 공유(플레이 상태 / 시간 / 볼륨)
             double currentTime = VideoManager.instance.playTimeSliderBar.value * VideoManager.instance.videoPlayer.length;
-            FM_System.instance.photonView.RPC("VideoSetting", newPlayer, VideoManager.instance.videoPlayer.isPlaying, currentTime);
+            FM_System.instance.photonView.RPC("VideoSetting", newPlayer, VideoManager.instance.videoPlayer.isPlaying, currentTime,VideoManager.instance.audioSource.volume);
         }
     }
     

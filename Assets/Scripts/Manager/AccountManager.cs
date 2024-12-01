@@ -53,7 +53,7 @@ public class AccountManager : MonoBehaviour
     private void CreateAccount()
     {
         PunSystem.instance.loadingScreen.SetActive(true);   // 비동기 전이라, 큐 사용 안해도 됨.
-    
+        
         auth.CreateUserWithEmailAndPasswordAsync(PunSystem.instance.accountEmailInput.text, PunSystem.instance.accountPasswordInput.text)
             .ContinueWith(task => 
             {   
