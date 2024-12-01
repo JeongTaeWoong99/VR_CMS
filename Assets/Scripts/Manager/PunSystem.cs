@@ -30,7 +30,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public TMP_InputField accountPasswordInput;
     
     [Header("미러링")]
-    public GameObject mirroringScreen;
+    public GameObject      mirroringScreen;
+    public TextMeshProUGUI onLineText;      // 접속중인 교육생 수 체크
     
     [Header("비디오공유")]
     public GameObject videoShareScreen;
@@ -97,109 +98,11 @@ public class PunSystem : MonoBehaviourPunCallbacks
 
     public void CloseMenus()
     {
-        //createRoomScreen.SetActive(false);
-        //selectRoomScreen.SetActive(false);
-        //roomScreen.SetActive(false);
-        //roomBrowserScreen.SetActive(false);
         loginScreen.SetActive(false);
         mirroringScreen.SetActive(false);
         videoShareScreen.SetActive(false);
         authorityScreen.SetActive(false);
     }
-
-    // 버튼 함수
-    // public void OpenRoomCreate()
-    // {
-    //     CloseMenus();
-    //     createRoomScreen.SetActive(true);
-    // }
-
-    // public void CreateRoom()
-    // {
-    //     // 방제가 비어있는지 확인
-    //     if(!string.IsNullOrEmpty(roomNameInput.text))
-    //     {
-    //         RoomOptions options = new RoomOptions();
-    //         options.MaxPlayers = 8;
-    //
-    //         PhotonNetwork.CreateRoom(roomNameInput.text, options); // 방생성 및 설정된 옵션 전달
-    //
-    //         CloseMenus();
-    //         loadingText.text = "Creating Room...";
-    //         loadingScreen.SetActive(true);
-    //     }
-    // }
-
-    // 버튼 함수
-    // public void OpenSelectRoom()
-    // {
-    //     CloseMenus();
-    //     selectRoomScreen.SetActive(true);
-    // }
-
-    // public void SelectRoom()
-    // {
-    //     bool foundMatchingRoom = false; // 룸 존재 여부 초기화
-    //
-    //     // 룸이 존재하는지 체크
-    //     foreach (RoomInfo room in currentRoomListInfo)
-    //     {
-    //         // 룸 존재 O -> 방에 들어가기
-    //         if (room.CustomProperties.ContainsKey("ControlType") && (string)room.CustomProperties["ControlType"] == selectedRoomName.text)
-    //         {
-    //             foundMatchingRoom = true; 
-    //             PhotonNetwork.JoinRoom(selectedRoomName.text); // 방 바로 입장
-    //             break;
-    //         }
-    //     }
-    //     
-    //     // 룸 존재 X -> 방 직접 만들고 입장 후, 게임 시작
-    //     if (!foundMatchingRoom)
-    //     {
-    //         RoomOptions options = new RoomOptions();
-    //         options.MaxPlayers = 8;
-    //         
-    //         PhotonNetwork.CreateRoom(selectedRoomName.text, options); // 방생성 및 설정된 옵션 전달
-    //     }
-    //     
-    //     // 로딩창
-    //     CloseMenus();
-    //     loadingText.text = "Creating Room...";
-    //     loadingScreen.SetActive(true);
-    // }
-
-    // 방 입장 후 플레이어 리스트 출력 + 플레이어가 방에서 나갈시
-
-    // private void ListAllPlayers()
-    // {
-    //     // 정보 비우기
-    //     foreach (TMP_Text player in allPlayerNames)
-    //     {
-    //         Destroy(player.gameObject);
-    //     }
-    //
-    //     allPlayerNames.Clear();
-    //
-    //     // 업데이트
-    //     Player[] players = PhotonNetwork.PlayerList; // room안의 플레이어 정보를 받아온다.
-    //     for (int i = 0; i < players.Length; i++)
-    //     {
-    //         TMP_Text newPlayerLabel = Instantiate(playerNameLabel, playerNameLabel.transform.parent);
-    //         newPlayerLabel.text = players[i].NickName;
-    //         newPlayerLabel.gameObject.SetActive(true);
-    //
-    //         allPlayerNames.Add(newPlayerLabel);
-    //     }
-    // }
-
-    // 방생성이 실패하면 호출(실패 코드와 메세지설명을 받을 수 있음)
-    // public override void OnCreateRoomFailed(short returnCode, string message)
-    // {
-    //     errorText.text = "Failed To Create Room: " + message;
-    //     CloseMenus();
-    //     errorScreen.SetActive(true);
-    // }
-    
     
     
     // 만든 방 삭제 및 삭제가 완료되면, Lobby로 다시 접속(Room -> Lobby)
@@ -208,58 +111,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
         PhotonNetwork.LeaveRoom();
         CloseMenus();
     }
-    
-    // 버튼 함수
-    // public void OpenRoomBrowser()
-    // {
-    //     CloseMenus();
-    //     roomBrowserScreen.SetActive(true);
-    // }
 
-    // 버튼 함수
-    // public void CloseRoomBrowser()
-    // {
-    //     CloseMenus();
-    // }
-
-    // 룸 리스트 초기화 - 현재 생성된 룸들의 정보가 담긴 리스트가 매개변수로 온다.
-    // 로비 내에 룸이 생성되거나 사라질때 자동 호출되는 콜백
-    // public override void OnRoomListUpdate(List<RoomInfo> roomList) // 자동업데이트
-    // {
-    //     foreach (RoomButton rb in allRoomButtons) // 기존 정보 모두 삭제
-    //     {
-    //         Destroy(rb.gameObject);
-    //     }
-    //
-    //     allRoomButtons.Clear();
-    //
-    //     theRoomButton.gameObject.SetActive(false); // 예시 이미지 false
-    //
-    //     for (int i = 0; i < roomList.Count; i++)
-    //     {
-    //         if (roomList[i].PlayerCount != roomList[i].MaxPlayers && !roomList[i].RemovedFromList &&
-    //             roomList[i].IsVisible)
-    //         {
-    //             RoomButton newButton = Instantiate(theRoomButton, theRoomButton.transform.parent);
-    //             newButton.SetButtonDetails(roomList[i]);
-    //             newButton.gameObject.SetActive(true);
-    //
-    //             allRoomButtons.Add(newButton);
-    //         }
-    //     }
-    // }
-
-    // 버튼 함수
-    // public void JoinRoom(RoomInfo inputInfo)
-    // {
-    //     PhotonNetwork.JoinRoom(inputInfo.Name);
-    //
-    //     CloseMenus();
-    //     loadingText.text = "Joining Room";
-    //     loadingScreen.SetActive(true);
-    // }
-    
-    
     // 방 입장 성공 시 호출
     // 미러링 할 유저가 있으면(=방이 만들어져 있음.), 플레이어 리스트를 받아오고,
     // 디코더 등록
@@ -289,6 +141,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
             }
             else
                 feedbackText.gameObject.SetActive(false);
+
+            onLineText.text = OnLineCheck();
         }
         // 화면공유 룸에 들어온 경우...
         else
@@ -301,17 +155,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
         
         loadingScreen.SetActive(false); // 모든게 끝나고, 로딩창 없애기....
     }
-    
-    // 접속한 방을 다른 클라이언트가 떠나면, 호출됨.
-    // 모니터링 화면에서, 비디오 쉐어 버튼을 눌렀을 때,(비디오 쉐어 버튼만 꺼져있어야 함.)
-    // public override void OnLeftRoom()
-    // {
-    //     // // 비디오 쉐어 버튼 빼고, 상호작용 켜기.
-    //     // for (int i = 0; i < MenuButton.instance.menuButtonList.Count - 1 ; i++)
-    //     //     MenuButton.instance.menuButtonList[i].GetComponent<Button>().interactable = true;
-    // }
-    
-    
+
     // 방 입장 실패 시 호출
     // 미러링 할 유저가 없으면(=방이 말들어져 있지 않음), 방 만들어서 들어가기.
     public override void OnCreateRoomFailed(short returnCode, string message)
@@ -339,6 +183,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
         {
             feedbackText.gameObject.SetActive(false);
             FM_System.instance.DecoderRegistration(newPlayer);
+            
+            onLineText.text = OnLineCheck();
         }
         else
         {
@@ -346,8 +192,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
             GameObject connectedPlayerClone = Instantiate(connectedPlayerTextPrefabs, connectedPlayerGroup.transform, true);    
             connectedPlayerClone.GetComponent<TextMeshProUGUI>().text = newPlayer.NickName;
             
-            Debug.Log(VideoManager.instance.audioSource.volume);
-            // 비디어 정보 공유(플레이 상태 / 시간 / 볼륨)
+            // 비디어 동기화 공유(플레이 상태 / 시간 / 볼륨)
             double currentTime = VideoManager.instance.playTimeSliderBar.value * VideoManager.instance.videoPlayer.length;
             FM_System.instance.photonView.RPC("VideoSetting", newPlayer, VideoManager.instance.videoPlayer.isPlaying, currentTime,VideoManager.instance.audioSource.volume);
         }
@@ -365,6 +210,8 @@ public class PunSystem : MonoBehaviourPunCallbacks
                 feedbackText.gameObject.SetActive(true);
                 feedbackText.text = "접속 중인 교육생이 없습니다.";
             }
+            
+            onLineText.text = OnLineCheck();
         }
         // 공유방에서 나간 경우...
         else
@@ -386,5 +233,21 @@ public class PunSystem : MonoBehaviourPunCallbacks
     public void AccountPanelOnOff()
     {
         accountScreen.gameObject.SetActive(!accountScreen.gameObject.activeInHierarchy);
+    }
+
+    public string OnLineCheck()   // 미러링에서 교육중인 플레이어 체크
+    {
+        int count = PhotonNetwork.PlayerList.Length;    // 전체 플레이어 - cms 플레이어 제외
+    
+        // 교육중인 플레이어 체크에서, cms를 카운트하여, 빼주도록 한다.
+        Player[] inRoomPlayerList = PhotonNetwork.PlayerList;
+        foreach (var inRoomPlayerLists in inRoomPlayerList)
+        {
+            if (inRoomPlayerLists.CustomProperties.ContainsKey("CMS") && (bool)inRoomPlayerLists.CustomProperties["CMS"])
+                count--;
+        }
+
+        string checkString = "접속한 교육생 수 : " + count;
+        return checkString;
     }
 }

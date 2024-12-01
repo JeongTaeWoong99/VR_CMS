@@ -3,6 +3,7 @@ using UnityEngine;
 using System;
 using UnityEngine.UI;
 using System.IO;
+using TMPro;
 
 public class GameViewDecoder : MonoBehaviour
 {
@@ -15,7 +16,9 @@ public class GameViewDecoder : MonoBehaviour
 
     public Texture2D  ReceivedTexture;
     public GameObject TestQuad;
-    public RawImage   TestImg;      // 이미지를 출력해주는 원시 이미지...
+    
+    public RawImage        TestImg;      // RPC 원시 이미지
+    public TextMeshProUGUI batteryText;  // RPC 베터리 텍스트
 
     public UnityEventTexture2D OnReceivedTexture2D;
 
