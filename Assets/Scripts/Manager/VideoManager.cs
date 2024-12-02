@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using ExitGames.Client.Photon;
 using Firebase.Extensions;
 using Firebase.Storage;
 using Photon.Pun;
@@ -22,11 +21,13 @@ public class VideoManager : MonoBehaviourPunCallbacks
     private FirebaseStorage  storage;
     private StorageReference stRef;
 
+    [HideInInspector] 
+    public string currentSettingVideoName;                              // 현재 세팅된, 비디오의 이름(화면 공유방에서 영상을 선택하면 바뀐다.)
+
     public GameObject      videoControllerScreen;                       // 로우 이미지 및 슬라이더 및 버튼 전체 보이기 제어
     public GameObject      shareSetting;                                // 영상선택, 업로드 전체 보이기 제어
     public List<Button>    shareSettingButtonList = new List<Button>(); // 영상선택, 업로드 활성 및 비활성화 제어
     
-    //public TextMeshProUGUI videoPlayButtonText;                         // ▶ ■ 버튼 텍스트
     public Image  VideoPlayButtonImage;
     public Sprite playSprite;
     public Sprite stopSprite;
@@ -40,6 +41,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
     private IEnumerator    playTimeUIRenewalCo;
 
     public Slider          SoundSliderBar;
+    
     
     private void Awake()
     {
@@ -73,8 +75,11 @@ public class VideoManager : MonoBehaviourPunCallbacks
         // 영상선택 버튼
         if (buttonNum == 0)
         {
-            if (FileBrowser.Success)
+            // ClientVideoSettingCheck의 상태가 전부 O여야, true를 리턴함.
+            if (FileBrowser.Success && ClientVideoSettingCheck())
                 SelectVideo(FileBrowser.Result);
+            else
+                PunSystem.instance.feedbackText.text = "클라이언트에서 동영상을 다운로드하고 있으므로, 변경할 수 없습니다.";
         }
         // 업로드 버튼
         else if (buttonNum == 1)
@@ -96,26 +101,38 @@ public class VideoManager : MonoBehaviourPunCallbacks
         PunSystem.instance.feedbackText.gameObject.SetActive(true);
         PunSystem.instance.feedbackText.text = "방 생성 및 동영상 세팅 중...";
 
-        if (filePaths.Length > 0 && !PhotonNetwork.InRoom)
+        if (filePaths.Length > 0)
         {
             string filePath = filePaths[0];  
             string fileName = FileBrowserHelpers.GetFilename(filePath); // 파일이름
-            
-            videoPlayer.url = filePath;
-            Debug.Log($"Selected video file: {filePath}");
-            
-            videoPlayer.Prepare();                
-            videoPlayer.Pause();                  // 첫 프레임 화면(동영상 윤곽이 보이도록)
+            currentSettingVideoName = fileName; // 현재, 화면 공유방에 선택된 동영상 이름 
+            videoPlayer.url         = filePath; // 파일 경로
 
+            videoPlayer.Prepare();                
+            videoPlayer.Pause(); // 첫 프레임 화면(동영상 윤곽이 보이도록)
+        
+            // 처음 새팅(로비->룸 만드는 경우!)
             // 방 만들기
-            string[] splitParts = AccountManager.instance.user.Email.Split('@');
-            string frontPart    = splitParts[0];    // 만든사람 ID
+            if (!PhotonNetwork.InRoom)
+            {
+                string[] splitParts = AccountManager.instance.user.Email.Split('@');
+                string   frontPart  = splitParts[0];    // 만든사람 ID
             
-            RoomOptions options = new RoomOptions();
-            options.MaxPlayers  = 20;
-            PhotonNetwork.CreateRoom(fileName + "$" + frontPart, options, TypedLobby.Default); // $를 통해서, 비디오 이름과 개설자를 구분...
+                RoomOptions options = new RoomOptions();
+                options.MaxPlayers  = 20;
+                PhotonNetwork.CreateRoom(fileName + "$" + frontPart, options, TypedLobby.Default); // $를 통해서, 비디오 이름과 개설자를 구분...
+            }
+            // 이미 방이 만들어져 있는 경우
+            // 동영상만 
+            else
+            {
+                // 비디오 존재 체크(입장해 있는 모든 교육생 체크)
+                FM_System.instance.photonView.RPC("VideoExistCheck", RpcTarget.Others, currentSettingVideoName);
+                PunSystem.instance.loadingScreen.SetActive(false); // 모든게 끝나고, 로딩창 없애기....
+                PunSystem.instance.feedbackText.text = "VR 영상 공유방을 만들었습니다.";
+            }
             
-            ResetVideoSetting();                                      // UI 초기화
+            ResetVideoSetting();                                // UI 초기화
             videoControllerScreen.gameObject.SetActive(true);   // 비디오 컨트롤 보이기
         }
     }
@@ -130,6 +147,8 @@ public class VideoManager : MonoBehaviourPunCallbacks
         // 비디오 볼륨 + 사운드 슬라이더 초기화
         SoundSliderBar.value = 0.5f;
         audioSource.volume   = 0.5f;
+
+        StopSetting();
     }
 
     private IEnumerator PlayTimeUIRenewal()
@@ -168,7 +187,7 @@ public class VideoManager : MonoBehaviourPunCallbacks
         else
             PlaySetting();
     }
-
+    
     private void PlaySetting()
     {
         VideoPlayButtonImage.sprite = stopSprite;
@@ -204,9 +223,6 @@ public class VideoManager : MonoBehaviourPunCallbacks
         string fileName      = FileBrowserHelpers.GetFilename(filePath);       // 파일이름
         byte[] bytes         = FileBrowserHelpers.ReadBytesFromFile(filePath); // 파일정보
         string localFileHash = CalculateMD5Hash(bytes);                        // 파일의 MD5 해쉬 정보 계산(단방향 / 덜 안전 / 빠름 / 체크성)
-        
-        // string destinationPath = Path.Combine( Application.persistentDataPath, FileBrowserHelpers.GetFilename( filePath ));
-        // FileBrowserHelpers.CopyFile(filePath, destinationPath);
 
         var newMetadata            = new MetadataChange();                                              // 저장소의 파일 타입 생성
         newMetadata.ContentType    = "video/mp4";                                                       // 타입 변경(저장소 직접 업로드 시, 동영상의 타입으로 맞춰줌)
@@ -277,4 +293,23 @@ public class VideoManager : MonoBehaviourPunCallbacks
         return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
     }
 
+    public bool ClientVideoSettingCheck()
+    {
+        // 닉네임 체크 및 텍스트 프리팹 삭제해주기
+        foreach (Transform child in PunSystem.instance.connectedPlayerGroup.transform)
+        {
+            TextMeshProUGUI textMesh   = child.GetComponent<TextMeshProUGUI>(); // 텍스트 접근
+            
+            // text의 순서 -> 닉네임/상태/배터리
+            string[] splitText     = textMesh.text.Split('/');
+            string   frontNickName = splitText[1];                    // 동영상 세팅 상태 체크
+                
+            if (textMesh != null && frontNickName == "X")
+            {
+                return false;   // 변경 불가
+            }
+        }
+
+        return true;
+    }
 }

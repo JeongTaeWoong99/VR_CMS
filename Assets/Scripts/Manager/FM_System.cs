@@ -104,4 +104,32 @@ public class FM_System : MonoBehaviourPunCallbacks
             }
         }
     }
+    
+    [PunRPC]
+    public void VideoSettingRequest(Player payer) // 클라의 세팅 리퀘스트를 받아서, 세팅 정보 보내주기 (CMS ->  클라)
+    {
+        // 비디어 동기화 공유(플레이 상태 / 시간 / 볼륨)
+        double currentTime = VideoManager.instance.playTimeSliderBar.value * VideoManager.instance.videoPlayer.length;
+        photonView.RPC("VideoSettingAccept", payer, VideoManager.instance.videoPlayer.isPlaying, currentTime, VideoManager.instance.audioSource.volume);
+    }
+    
+    [PunRPC]
+    public void PlayerSettingStateRenewal(string nickName,string settingState,int batteryState)
+    {
+        // 닉네임 체크하여, 리스트에서 플레이어의 상태를 갱신해 줌!
+        foreach (Transform child in PunSystem.instance.connectedPlayerGroup.transform)
+        {
+            TextMeshProUGUI textMesh = child.GetComponent<TextMeshProUGUI>(); // 텍스트 접근
+            
+            // text의 순서 -> 닉네임/상태/배터리
+            string[] splitText     = textMesh.text.Split('/');
+            string   frontNickName = splitText[0];
+                
+            if (textMesh != null)
+            {
+                if (frontNickName == nickName)
+                    textMesh.text = nickName + "/" + settingState + "/" + batteryState + "%";
+            }
+        }
+    }
 }

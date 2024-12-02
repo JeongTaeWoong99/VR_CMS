@@ -27,10 +27,10 @@ public class MirroringScreenClick : MonoBehaviour, IPointerClickHandler
                 createTargetGameObject.SetActive(true);
                 
                 GameObject clone = Instantiate(bigRawImage, createTargetGameObject.transform);
-                clone.transform.localScale = new Vector3(18,10,1);
+                clone.transform.localScale = new Vector3(16,9,1);
                 
-                BigMirroingCanvas.instance.currentWatchingNickName = filteredNickName;                       // 현재 보고있는 닉네임 변경.
-                FM_System.instance.photonView.RPC("StreamChange", targetTrainee,5,80); // FPS 1 -> 10, Quality 30 -> 80 //FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
+                BigMirroingCanvas.instance.currentWatchingNickName = filteredNickName;                         // 현재 보고있는 닉네임 변경.
+                FM_System.instance.photonView.RPC("StreamChange", targetTrainee,5,50); // FPS 1 -> 10, Quality 30 -> 50 //FM_System.instance에 있는 photonView컴포넌트를 상속하여 사용.
             }
             else
             {

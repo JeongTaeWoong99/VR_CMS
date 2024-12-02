@@ -31,8 +31,9 @@ public class PunSystem : MonoBehaviourPunCallbacks
     
     [Header("미러링")]
     public GameObject      mirroringScreen;
+    public TextMeshProUGUI videoNameText;
     public TextMeshProUGUI onLineText;      // 접속중인 교육생 수 체크
-    
+
     [Header("비디오공유")]
     public GameObject videoShareScreen;
     public GameObject connectedPlayerTextPrefabs;
@@ -46,9 +47,6 @@ public class PunSystem : MonoBehaviourPunCallbacks
         instance = this;
         
         Application.targetFrameRate = 60; // 게임 프레임 고정
-        
-        // PhotonNetwork.SendRate          = 10; // 초당 서버로 보내는 패킷 횟수 (기본값 20)
-        // PhotonNetwork.SerializationRate = 10;  // 초당 동기화되는 데이터 횟수 (기본값 10)
     }
 
     void Start()
@@ -147,8 +145,6 @@ public class PunSystem : MonoBehaviourPunCallbacks
         // 화면공유 룸에 들어온 경우...
         else
         {
-            VideoManager.instance.shareSettingButtonList[0].interactable = false; // 영상공유 버튼 끄기
-            
             feedbackText.gameObject.SetActive(true);
             feedbackText.text = "VR 영상 공유방을 만들었습니다.";
         }
@@ -190,11 +186,10 @@ public class PunSystem : MonoBehaviourPunCallbacks
         {
             // 공유방에 누가 들어왔는지 표시...
             GameObject connectedPlayerClone = Instantiate(connectedPlayerTextPrefabs, connectedPlayerGroup.transform, true);    
-            connectedPlayerClone.GetComponent<TextMeshProUGUI>().text = newPlayer.NickName;
+            connectedPlayerClone.GetComponent<TextMeshProUGUI>().text = newPlayer.NickName + "/" + "X" + "/" + "0%";    // 닉네임 / 세팅 상태 / 배터리 상태
             
-            // 비디어 동기화 공유(플레이 상태 / 시간 / 볼륨)
-            double currentTime = VideoManager.instance.playTimeSliderBar.value * VideoManager.instance.videoPlayer.length;
-            FM_System.instance.photonView.RPC("VideoSetting", newPlayer, VideoManager.instance.videoPlayer.isPlaying, currentTime,VideoManager.instance.audioSource.volume);
+            // 비디오 존재 체크(입장한 친구만 체크)
+            FM_System.instance.photonView.RPC("VideoExistCheck", newPlayer, VideoManager.instance.currentSettingVideoName);
         }
     }
     
@@ -221,9 +216,14 @@ public class PunSystem : MonoBehaviourPunCallbacks
             {
                 TextMeshProUGUI textMesh   = child.GetComponent<TextMeshProUGUI>(); // 텍스트 접근
                 GameObject childGameObject = child.gameObject;                      // 현재 오브젝트
+            
+                // text의 순서 -> 닉네임/상태/배터리
+                string[] splitText     = textMesh.text.Split('/');
+                string   frontNickName = splitText[0];
+                
                 if (textMesh != null)
                 {
-                    if (textMesh.text == leftPlayer.NickName)
+                    if (frontNickName == leftPlayer.NickName)
                         Destroy(childGameObject);
                 }
             }
@@ -235,7 +235,7 @@ public class PunSystem : MonoBehaviourPunCallbacks
         accountScreen.gameObject.SetActive(!accountScreen.gameObject.activeInHierarchy);
     }
 
-    public string OnLineCheck()   // 미러링에서 교육중인 플레이어 체크
+    private string OnLineCheck()   // 미러링에서 교육중인 플레이어 체크
     {
         int count = PhotonNetwork.PlayerList.Length;    // 전체 플레이어 - cms 플레이어 제외
     
