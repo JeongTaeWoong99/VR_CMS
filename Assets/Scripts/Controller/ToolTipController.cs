@@ -4,6 +4,7 @@ using UnityEngine.Playables;
 
 public class ToolTipController : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
+    [TextArea]
     public string iconName;
 
     // 마우스가 ToolTipController가 들어간 UI에 닿으면, 발동

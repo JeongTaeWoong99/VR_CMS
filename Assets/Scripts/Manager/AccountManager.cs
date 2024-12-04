@@ -52,6 +52,9 @@ public class AccountManager : MonoBehaviour
 
     private void CreateAccount()
     {
+        if (string.IsNullOrEmpty(PunSystem.instance.accountEmailInput.text) || string.IsNullOrEmpty(PunSystem.instance.accountPasswordInput.text))
+            return;
+            
         PunSystem.instance.loadingScreen.SetActive(true);   // 비동기 전이라, 큐 사용 안해도 됨.
         
         auth.CreateUserWithEmailAndPasswordAsync(PunSystem.instance.accountEmailInput.text, PunSystem.instance.accountPasswordInput.text)
@@ -145,8 +148,11 @@ public class AccountManager : MonoBehaviour
 
     public void Login()
     {
+        if (string.IsNullOrEmpty(PunSystem.instance.loginEmailInput.text) || string.IsNullOrEmpty(PunSystem.instance.loginPasswordInput.text))
+            return;
+        
         PunSystem.instance.loadingScreen.SetActive(true);   // 비동기 전이라, 큐 사용 안해도 됨.
-    
+        
         if (!string.IsNullOrEmpty(PunSystem.instance.loginEmailInput.text))
         {
             auth.SignInWithEmailAndPasswordAsync(PunSystem.instance.loginEmailInput.text, PunSystem.instance.loginPasswordInput.text).ContinueWith(

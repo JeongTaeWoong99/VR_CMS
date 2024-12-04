@@ -31,7 +31,6 @@ public class PunSystem : MonoBehaviourPunCallbacks
     
     [Header("미러링")]
     public GameObject      mirroringScreen;
-    public TextMeshProUGUI videoNameText;
     public TextMeshProUGUI onLineText;      // 접속중인 교육생 수 체크
 
     [Header("비디오공유")]

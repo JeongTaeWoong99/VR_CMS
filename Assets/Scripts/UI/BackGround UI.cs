@@ -8,8 +8,13 @@ public class BackGroundUI : MonoBehaviour
 
     public TextMeshProUGUI informationText;
 
-    private void Start()
+    private void Awake()
     {
         instance = this;
+    }
+
+    private void Start()
+    {
+        Screen.SetResolution(1920, 1080, false);
     }
 }

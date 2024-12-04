@@ -80,6 +80,7 @@ public class GameViewDecoder : MonoBehaviour
                 StartCoroutine(ProcessImageData(dataByte));
             }
         }
+        
     }
 
     IEnumerator ProcessImageData(byte[] _byteData)

@@ -34,14 +34,18 @@ public class FM_System : MonoBehaviourPunCallbacks
     public void RPC_SendMessage(byte[] _bytesData, string message, int battery)
     {
         if (message.Contains("VideoShare"))
-        {
+        {   
             foreach (var gameViewDecoderLists in gameViewDecoderList)
             {
+                // 라벨 번호가 다른건 넘어가기
+                int _label = BitConverter.ToInt32(_bytesData, 0);
+                if (_label != gameViewDecoderLists.label)
+                    continue;
+
+                gameViewDecoderLists.Action_ProcessImageData(_bytesData);                 // 바이트 이미지 변경 
                 if(gameViewDecoderLists.TestImg.GetComponent<ImageVisibilityInScrollRect>().isVisibleNow)
                     gameViewDecoderLists.TestImg.color = new Color(1, 1, 1, 1); // 투명도 = 1 (보이게 하기)
-                gameViewDecoderLists.Action_ProcessImageData(_bytesData);   // 바이트 이미지 변경 
-
-                gameViewDecoderLists.batteryText.text = "남은 배터리 : " + battery; // 배터리 텍스트
+                gameViewDecoderLists.batteryText.text = "남은 배터리 : " + battery + "%";   // 배터리 텍스트 변경
             }
         }
     }
@@ -50,6 +54,7 @@ public class FM_System : MonoBehaviourPunCallbacks
     {
         GameObject      clonePrefabs = Instantiate(decoderPrefabs, decoderGroup.transform, true); // 새 디코더 스크립트 생성
         GameViewDecoder cloneDecoder = clonePrefabs.GetComponentInChildren<GameViewDecoder>();                  // 게임뷰 디코더 찾기
+        
         // NickName Text 찾아서 넣어주기.
         Transform       nickNameTextTransform = clonePrefabs.transform.Find("NickName Text");
         TextMeshProUGUI cloneText             = nickNameTextTransform != null ? nickNameTextTransform.GetComponent<TextMeshProUGUI>() : null;
