@@ -103,23 +103,23 @@ public class VideoManager : MonoBehaviourPunCallbacks
 
         if (filePaths.Length > 0)
         {
-            string filePath = filePaths[0];  
+            string filePath = filePaths[0];
             string fileName = FileBrowserHelpers.GetFilename(filePath); // 파일이름
             currentSettingVideoName = fileName; // 현재, 화면 공유방에 선택된 동영상 이름 
             videoPlayer.url         = filePath; // 파일 경로
 
-            videoPlayer.Prepare();                
-            videoPlayer.Pause(); // 첫 프레임 화면(동영상 윤곽이 보이도록)
-        
+            videoPlayer.Prepare();                           // Prepare the video
+            videoPlayer.prepareCompleted += OnVideoPrepared; // Add listener for preparation completion
+
             // 처음 새팅(로비->룸 만드는 경우!)
             // 방 만들기
             if (!PhotonNetwork.InRoom)
             {
                 string[] splitParts = AccountManager.instance.user.Email.Split('@');
-                string   frontPart  = splitParts[0];    // 만든사람 ID
-            
+                string frontPart = splitParts[0]; // 만든사람 ID
+
                 RoomOptions options = new RoomOptions();
-                options.MaxPlayers  = 20;
+                options.MaxPlayers = 20;
                 PhotonNetwork.CreateRoom(fileName + "$" + frontPart, options, TypedLobby.Default); // $를 통해서, 비디오 이름과 개설자를 구분...
             }
             // 이미 방이 만들어져 있는 경우
@@ -131,10 +131,18 @@ public class VideoManager : MonoBehaviourPunCallbacks
                 PunSystem.instance.loadingScreen.SetActive(false); // 모든게 끝나고, 로딩창 없애기....
                 PunSystem.instance.feedbackText.text = "VR 영상 공유방을 만들었습니다.";
             }
-            
-            ResetVideoSetting();                                // UI 초기화
-            videoControllerScreen.gameObject.SetActive(true);   // 비디오 컨트롤 보이기
+
+            ResetVideoSetting(); // UI 초기화
+            videoControllerScreen.gameObject.SetActive(true); // 비디오 컨트롤 보이기
         }
+    }
+    
+    private void OnVideoPrepared(VideoPlayer vp)
+    {
+        playTimeSliderBar.maxValue = (int)vp.length; // Set max slider value to video length
+        vp.Pause();                                  // Pause to show the first frame
+        vp.prepareCompleted -= OnVideoPrepared;      // Unsubscribe from the event
+        Debug.Log("Max값 변경: " + playTimeSliderBar.maxValue);
     }
 
     private void ResetVideoSetting()
@@ -159,21 +167,28 @@ public class VideoManager : MonoBehaviourPunCallbacks
 
         while (true)
         {
-            // 현재 재생시간 표시
-            hour    = (int)videoPlayer.time / 3600;
-            minutes = (int)(videoPlayer.time%3600) / 60;
-            seconds = (int)(videoPlayer.time%3600) % 60;
-            currentPlayTimeText.text = $"{hour:D2}:{minutes:D2}:{seconds:D2}";
-            
-            // 총 재생시간 표시
-            hour    = (int)videoPlayer.length / 3600;
-            minutes = (int)(videoPlayer.length%3600) / 60;
-            seconds = (int)(videoPlayer.length%3600) % 60;
-            maxPlayTimeText.text = $"{hour:D2}:{minutes:D2}:{seconds:D2}";
-            
-            // 슬라이더 재싱 시간 표시
-            playTimeSliderBar.value = (float)(videoPlayer.time / videoPlayer.length);
-            yield return new WaitForSeconds(1);
+            if (videoPlayer.length > 0)
+            {
+                // Current play time
+                int currentTime    = Mathf.FloorToInt((float)videoPlayer.time);
+                int currentHours   = currentTime / 3600;
+                int currentMinutes = (currentTime % 3600) / 60;
+                int currentSeconds = currentTime % 60;
+
+                currentPlayTimeText.text = $"{currentHours:D2}:{currentMinutes:D2}:{currentSeconds:D2}";
+
+                // Total play time
+                int totalTime    = Mathf.FloorToInt((float)videoPlayer.length);
+                int totalHours   = totalTime / 3600;
+                int totalMinutes = (totalTime % 3600) / 60;
+                int totalSeconds = totalTime % 60;
+
+                maxPlayTimeText.text = $"{totalHours:D2}:{totalMinutes:D2}:{totalSeconds:D2}";
+                
+                playTimeSliderBar.value = currentTime;
+            }
+
+            yield return new WaitForSeconds(1); // Update every second
         }
     }
     

@@ -114,8 +114,8 @@ public class FM_System : MonoBehaviourPunCallbacks
     public void VideoSettingRequest(Player payer) // 클라의 세팅 리퀘스트를 받아서, 세팅 정보 보내주기 (CMS ->  클라)
     {
         // 비디어 동기화 공유(플레이 상태 / 시간 / 볼륨)
-        double currentTime = VideoManager.instance.playTimeSliderBar.value * VideoManager.instance.videoPlayer.length;
-        photonView.RPC("VideoSettingAccept", payer, VideoManager.instance.videoPlayer.isPlaying, currentTime, VideoManager.instance.audioSource.volume);
+        photonView.RPC("VideoSettingAccept", payer, VideoManager.instance.videoPlayer.isPlaying, Mathf.FloorToInt(VideoManager.instance.playTimeSliderBar.value), 
+                                                                             VideoManager.instance.audioSource.volume);
     }
     
     [PunRPC]

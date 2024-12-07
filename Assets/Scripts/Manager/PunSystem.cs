@@ -46,6 +46,9 @@ public class PunSystem : MonoBehaviourPunCallbacks
         instance = this;
         
         Application.targetFrameRate = 60; // 게임 프레임 고정
+        
+        PhotonNetwork.SendRate          = 60;
+        PhotonNetwork.SerializationRate = 60;
     }
 
     void Start()
