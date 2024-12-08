@@ -101,7 +101,7 @@
   </files>
   <settings>
     <setting name="androidAbis" value="arm64-v8a,x86" />
-    <setting name="bundleId" value="com.VRBC.VR_CMS" />
+    <setting name="bundleId" value="com.firebase.cmslogin" />
     <setting name="explodeAars" value="True" />
     <setting name="gradleBuildEnabled" value="True" />
     <setting name="gradlePropertiesTemplateEnabled" value="False" />
