@@ -11,6 +11,7 @@
 참여 활동 : 2024 SW  캡스톤디자인 경진대회(장려상)
 
 모니터링 기능 시연 : https://youtu.be/dLV6PF-9OuY
+
 화면 공유 기능 시연 : https://youtu.be/GSjbATBTBjc
 
 ![상장_맞춤](https://github.com/user-attachments/assets/9ce100b0-27e1-4c87-a0db-c95acadd8e43)
