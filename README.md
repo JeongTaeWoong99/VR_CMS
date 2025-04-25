@@ -3,7 +3,7 @@
   <img src="https://github.com/user-attachments/assets/e9058d27-ab6e-480f-9f34-7ba023f39403" width="66%"/>
 </p>
 
-<h3 align="center">모니터링 기능         / 화면 공유 기능</h3>
+<h3 align="center">모니터링 기능 / 화면 공유 기능</h3>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/fd4ee136-17e0-44ae-b024-85339bce377e" width="45%"/>
   &nbsp;
