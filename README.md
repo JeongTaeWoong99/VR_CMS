@@ -5,7 +5,7 @@
 
 <h3 align="center">모니터링 기능 / 화면 공유 기능</h3>
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/fd4ee136-17e0-44ae-b024-85339bce377e" width="45%"/>
+  <img src="https://github.com/user-attachments/assets/1d2ff05b-edb4-4492-89fe-e0ec16d0ac5d" width="45%"/>
   &nbsp;
   <img src="https://github.com/user-attachments/assets/7facfe50-ef94-4701-8013-ab36a86fa481" width="45%"/>
 </p>
