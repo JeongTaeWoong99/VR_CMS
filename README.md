@@ -1,8 +1,18 @@
-![시스템 구조도](https://github.com/user-attachments/assets/e9058d27-ab6e-480f-9f34-7ba023f39403)
+<h3 align="center">시스템 구조도</h3>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e9058d27-ab6e-480f-9f34-7ba023f39403" width="66%"/>
+</p>
+
+<h3 align="center">모니터링 기능</h3>
 <p align="center">
   <img src="https://github.com/user-attachments/assets/fd4ee136-17e0-44ae-b024-85339bce377e" width="45%"/>
   &nbsp;
   <img src="https://github.com/user-attachments/assets/7facfe50-ef94-4701-8013-ab36a86fa481" width="45%"/>
+</p>
+
+<h3 align="center">화면 공유 기능</h3>
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9ce100b0-27e1-4c87-a0db-c95acadd8e43" width="66%"/>
 </p>
 
 기간 : 2024.10 ~ 2024.12
