@@ -12,7 +12,7 @@
       </table>
     </td>
     <td style="vertical-align: top; padding-left: 20px;">
-      <img src="https://github.com/user-attachments/assets/896d88c6-e976-4f8c-9c0a-1578f2301c26" width="200"/>
+      <img src="Images/상장.jpg" width="200"/>
     </td>
   </tr>
 </table>
@@ -26,14 +26,14 @@ VR 콘텐츠가 교육 현장에 활용되는 사례가 증가함에 따라, 교
 
 ## 시스템 구조도
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c512e214-d5d3-43be-bb1e-04a7bd641a14" width="66%"/>
+  <img src="Images/시스템구조도.png" width="66%"/>
 </p>
 
 ## 주요 기능
 <h3 align="center">모니터링 기능</h3>
 
 <p align="center">
-<img src="https://github.com/user-attachments/assets/1d2ff05b-edb4-4492-89fe-e0ec16d0ac5d" width="66%"/>
+<img src="Images/모니터링.png" width="66%"/>
 </p>
 
 VR 콘텐츠 내에서 교육생의 현재 위치, 시야 방향, 행동 상태 등을 CMS 관리자 화면에서 실시간으로 확인할 수 있는 기능입니다.
@@ -43,7 +43,7 @@ VR 콘텐츠 내에서 교육생의 현재 위치, 시야 방향, 행동 상태 
 <h3 align="center">화면 공유 기능</h3>
 
 <p align="center">
-<img src="https://github.com/user-attachments/assets/d280349a-3ca2-4bf7-97eb-e028fb7d5387" width="66%"/>
+<img src="Images/화면공유.png" width="66%"/>
 </p>
 
 CMS에서 교육자가 영상을 재생하면, VR 교육생의 로컬로 저장된 영상이 동일하게 재생되며, 재생/일시정지/되감기 등의 제어 신호로 동기화되어 일괄 제어가 가능합니다.
